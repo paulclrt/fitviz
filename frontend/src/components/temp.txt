@@ -1,0 +1,37 @@
+Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
+
+useEffect(() => {
+  const ctx = document.getElementById("myChart") as HTMLCanvasElement;
+  if (!ctx) return;
+
+  const myChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      datasets: [
+        {
+          label: "Visitors",
+          data: [12, 19, 3, 5, 2, 3, 10],
+          fill: false,
+          borderColor: "rgb(75, 192, 192)",
+          tension: 0.1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        x: { display: false },
+        y: { display: false },
+      },
+    },
+  });
+
+  return () => {
+    myChart.destroy();
+  };
+}, []);

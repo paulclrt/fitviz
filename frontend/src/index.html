@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Static Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+header {
+    height: 4vw;
+}
+
+main {
+    height: 96vw;
+}
+</style>
+  </head>
+
+
+
+
+
+  bg-[#0a0f2c] text-white min-h-screen font-sans"<body class="bg-[#0a0f2c] text-white min-h-screen font-sans">
+    <header class="flex justify-between items-center px-6 py-4 text-sm">
+      <div>
+        <span class="text-[#cfd4ff] font-semibold">Main Dashboard</span>
+      </div>
+      <nav class="space-x-4">
+        <a href="#" class="hover:underline">Dashboard</a>
+        <a href="#" class="hover:underline">Tutorial</a>
+        <a href="#" class="hover:underline">Blog</a>
+      </nav>
+      <a href="#" class="hover:underline">Disconnect</a>
+    </header>
+
+    <main class="grid grid-cols-4 grid-rows-12 gap-8 p-8">
+      <div class="bg-[#11163d] p-4 rounded-xl relative shadow col-span-2 row-span-3">
+        <div class="text-sm text-right text-white/60 h-1/4 mb-1">
+          <p>BPM</p>
+          <p>Average: 60</p>
+          <p>Max: 110</p>
+        </div>
+        <div class="flex justify-center h-3/4">
+          <div class="overflow-hidden margin-x-auto"  style="height: 100%; width: 95%; position: relative;">
+              <canvas id="myChart" style="max-height: 100%;"></canvas>
+          </div>
+          <script>
+              const ctx = document.getElementById('myChart');
+              const DATA_COUNT = 12;
+              const labels = [];
+              for (let i = 0; i < DATA_COUNT; ++i) {
+                  labels.push(i.toString());
+              }
+              const datapoints = [0, 20, 20, 60, 60, 120, NaN, 180, 120, 125, 105, 110, 170];
+              const data = {
+                  labels: labels,
+                  datasets: [
+                      {
+                          label: 'BPM',
+                          data: datapoints,
+                          borderColor: "red",
+                          fill: true,
+                          cubicInterpolationMode: 'monotone',
+                          tension: 0.4
+                      }
+                  ]
+              };
+
+
+              const config = {
+                  type: 'line',
+                  data: data,
+                  options: {
+                      responsive: true,
+                      plugins: {
+                          title: {
+                              display: false,
+                              text: 'BPM of the day'
+                          },
+                          legend: {
+                              display: false,  
+                          }
+                      },
+                      interaction: {
+                          intersect: false,
+                      },
+                      scales: {
+                          x: {
+                              display: true,
+                              title: {
+                                  display: true
+                              }
+                          },
+                          y: {
+                              display: true,
+                              title: {
+                                  display: true,
+                                  text: 'BPM'
+                              },
+                              suggestedMin: 20,
+                              suggestedMax: 220
+                          }
+                      }
+                  },
+              };
+                new Chart(ctx, config);
+          </script>
+        </div>
+      </div>
+
+      <!-- Sleep -->
+      <div class="bg-[#11163d] p-4 rounded-xl relative shadow text-sm col-span-2 row-span-3">
+        <div class="mb-2">Overall sleep quality: GOOD ✅</div>
+        <div class="space-y-1 text-xs">
+          <p>Deep sleep: 1h 34 minutes (20%)</p>
+          <p>REM sleep: 67 minutes (18%)</p>
+          <p>Light sleep: 4h 34 minutes (60%)</p>
+        </div>
+        <div class="mt-2 border-t border-white/10 pt-2 text-xs text-white/70">
+          <p>
+            <span class="text-yellow-400">▉</span> Awake |
+            <span class="text-blue-400">▉</span> REM |
+            <span class="text-purple-400">▉</span> Light |
+            <span class="text-white">▉</span> Deep
+          </p>
+        </div>
+      </div>
+
+      <!-- Recovery -->
+      <div
+        class="bg-[#11163d] p-4 rounded-xl shadow flex flex-col justify-center items-center col-span-1 row-span-2"
+      >
+        <p class="text-xl mb-1">Recovery</p>
+        <p class="text-5xl text-green-400 font-bold">78</p>
+      </div>
+
+      <!-- Calories -->
+      <div
+        class="bg-[#11163d] p-4 rounded-xl shadow flex flex-col justify-center items-center col-span-1 row-span-2"
+      >
+        <p class="text-xl mb-1">786 kcal</p>
+        <p class="text-4xl">🔥</p>
+      </div>
+
+      <!-- Placeholder -->
+      <div
+        class="bg-[#11163d] p-4 rounded-xl shadow relative text-center text-white/70 flex justify-center items-center col-span-2 row-span-1"
+      > 
+        <button
+          class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white font-bold"
+        >
+          X
+        </button>
+        configure this tile
+      </div>
+    </main>
+
+    <footer class="text-center text-xs text-white/50 mt-6">
+      Made with ❤️  by Paul Claret
+    </footer>
+
+    <button
+      class="fixed bottom-4 left-4 w-12 h-12 rounded-full bg-green-500 text-white text-3xl shadow"
+    >
+      +
+    </button>
+  </body>
+</html>
+
