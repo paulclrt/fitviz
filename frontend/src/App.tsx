@@ -4,7 +4,59 @@ import Tile from "./components/Tile";
 import DraggableTile from "./components/DraggableTile";
 
 
+const GRID_COLS = 8;
+const tileSizes: Record<string, number> = {
+  BPM: 6,
+  recovery: 3,
+  calories: 3,
+  sleep: 6,
+  steps: 3,
+  distance: 3,
+  floors: 3,
+  activeMinutes: 3,
+  sedentary: 3,
+  heartZones: 3,
+  recentActivity: 3,
+};
 const initialTiles = ["recovery", "calories", "sleep", "BPM", "steps", "distance", "floors", "activeMinutes", "sedentary", "heartZones", "recentActivity"];
+function groupTilesIntoRows(tiles: string[]): { id: string; x_size: number }[] {
+  const rows: { id: string; x_size: number }[] = [];
+  let currentRow = [];
+  let rowSum = 0;
+
+  for (const tile of tiles) {
+    const size = tileSizes[tile] ?? 3;
+    if (rowSum + size > 12) {
+      const remaining = 12 - rowSum;
+      if (remaining >= 1) {
+        // Try to shrink last tile if possible
+        for (let i = currentRow.length - 1; i >= 0; i--) {
+          if (currentRow[i].x_size > 1 && currentRow[i].x_size - 1 >= remaining) {
+            currentRow[i].x_size -= remaining;
+            rowSum += remaining;
+            break;
+          }
+        }
+      }
+      rows.push(...currentRow);
+      currentRow = [];
+      rowSum = 0;
+    }
+
+    currentRow.push({ id: tile, x_size: size });
+    rowSum += size;
+  }
+
+  if (currentRow.length > 0) {
+    rows.push(...currentRow);
+  }
+
+  return rows;
+}
+
+
+
+
 
 export default function App() {
   const [tiles, setTiles] = useState(initialTiles);
@@ -28,23 +80,25 @@ export default function App() {
     });
   };
 
+  const arrangedTiles = groupTilesIntoRows(tiles);
+
   return (
     <div>
       <Header />
-      <main className="grid grid-cols-4 grid-rows-8 gap-4 p-4 bg-[#0a0f2c] min-h-screen text-white">
-        {tiles.map((tileType, index) => (
+      <main className="grid grid-cols-12 auto-rows-[minmax(100px,_auto)] gap-4 px-8 bg-[#0a0f2c] min-h-screen text-white">
+        {arrangedTiles.map((tile, index) => (
           <DraggableTile
-            key={tileType}
-            x_size={1}
-            y_size={2}
-            id={tileType}
+            key={tile.id}
+            x_size={tile.x_size}
+            y_size={3}
+            id={tile.id}
             index={index}
             moveTile={moveTile}
           >
             <Tile
-              title={tileType}
-              type={tileType}
-              onRemove={() => removeTile(tileType)}
+              title={tile.id}
+              type={tile.id}
+              onRemove={() => removeTile(tile.id)}
             />
           </DraggableTile>
         ))}
@@ -59,3 +113,5 @@ export default function App() {
     </div>
   );
 }
+
+
