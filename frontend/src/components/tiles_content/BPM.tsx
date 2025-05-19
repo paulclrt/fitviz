@@ -6,6 +6,7 @@ import { Chart, LineController, LineElement, PointElement, LinearScale, Title, C
 
 interface ContentProps {
   title: string
+  data: any
 }
 
 const chart_wrapper_style: React.CSSProperties = {
@@ -22,7 +23,7 @@ const chart_style: React.CSSProperties = {
 
 
 
-export default function BPM({title}: ContentProps) {
+export default function BPM({title, data}: ContentProps) {
 
   Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
 
@@ -33,13 +34,13 @@ export default function BPM({title}: ContentProps) {
     const myChart = new Chart(ctx, {
       type: "line",
       data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        labels: data.ecgReadings[0].waveformSamples,
         datasets: [
           {
-            label: "Visitors",
-            data: [12, 19, 3, 5, 2, 3, 10],
-            fill: false,
-            borderColor: "rgb(75, 192, 192)",
+            label: "BPM",
+            data: data.ecgReadings[0].waveformSamples,
+            fill: true,
+            borderColor: "rgb(230, 23, 22)",
             tension: 0.1,
           },
         ],
@@ -51,8 +52,8 @@ export default function BPM({title}: ContentProps) {
           legend: { display: false },
         },
         scales: {
-          x: { display: false },
-          y: { display: false },
+          x: { display: true },
+          y: { display: true },
         },
       },
     });
