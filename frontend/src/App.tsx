@@ -64,6 +64,7 @@ export default function App() {
       const today = new Date();
       return today.toISOString().split("T")[0];
   });
+  const [showSelector, setShowSelector] = useState(false);
 
   const removeTile = (id: string) => {
     setTiles((tiles) => tiles.filter((tile) => tile !== id));
@@ -108,12 +109,44 @@ export default function App() {
         ))}
 
         <button
-          onClick={addTile}
-          className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-green-500 text-white text-2xl shadow"
+            onClick={() => setShowSelector(true)}
+            className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-green-500 text-white text-2xl shadow"
         >
-          +
+            +
         </button>
       </main>
+      {showSelector && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-[#1a1f3c] p-6 rounded-xl w-[300px] max-h-[80vh] overflow-y-auto text-white">
+          <h2 className="text-lg mb-4">Add Widget</h2>
+          <ul className="space-y-2">
+          {initialTiles.map((tile) => {
+              const isAdded = tiles.includes(tile);
+              return (
+                  <li
+                  key={tile}
+                  onClick={() => {
+                      if (!isAdded) {
+                          setTiles((prev) => [...prev, tile]);
+                          setShowSelector(false);
+                      }
+                  }}
+                  className={`cursor-pointer px-3 py-2 rounded ${
+                      isAdded ? "bg-gray-700 text-gray-400 cursor-not-allowed" : "bg-white text-black hover:bg-green-200"
+                  }`}
+                  >
+                  {tile}
+                  </li>
+              );
+          })}
+          </ul>
+          <button onClick={() => setShowSelector(false)} className="mt-4 w-full bg-red-500 rounded py-2">
+          Cancel
+          </button>
+          </div>
+          </div>
+      )}
+
     </div>
   );
 }

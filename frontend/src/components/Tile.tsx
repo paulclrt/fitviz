@@ -4,6 +4,7 @@ import BPM from "./tiles_content/BPM"
 import Calories from "./tiles_content/calories"
 import RecentActivity from "./tiles_content/RecentActivity"
 
+import { Sleep } from "./tiles_content/Sleep"
 import { ActiveMinutes } from "./tiles_content/activeMinutes"
 import { Distance } from "./tiles_content/distanceWalked"
 import { Floors } from "./tiles_content/floorsClimbed"
@@ -217,6 +218,131 @@ const BPMdata = {
     }
 }
 
+
+const SLEEPdata= {
+  "sleep": [
+    {
+      "dateOfSleep": "2020-02-21",
+      "duration": 27720000,
+      "efficiency": 96,
+      "endTime": "2020-02-21T07:03:30.000",
+      "infoCode": 0,
+      "isMainSleep": true,
+      "levels": {
+        "data": [
+          {
+            "dateTime": "2020-02-20T23:21:30.000",
+            "level": "wake",
+            "seconds": 630
+          },
+          {
+            "dateTime": "2020-02-20T23:32:00.000",
+            "level": "light",
+            "seconds": 30
+          },
+          {
+            "dateTime": "2020-02-20T23:32:30.000",
+            "level": "deep",
+            "seconds": 870
+          },
+
+
+          {
+            "dateTime": "2020-02-21T06:32:30.000",
+            "level": "light",
+            "seconds": 1860
+          }
+        ],
+        "shortData": [
+          {
+            "dateTime": "2020-02-21T00:10:30.000",
+            "level": "wake",
+            "seconds": 30
+          },
+          {
+            "dateTime": "2020-02-21T00:15:00.000",
+            "level": "wake",
+            "seconds": 30
+          },
+          {
+            "dateTime": "2020-02-21T06:18:00.000",
+            "level": "wake",
+            "seconds": 60
+          }
+        ],
+        "summary": {
+          "deep": {
+            "count": 5,
+            "minutes": 104,
+            "thirtyDayAvgMinutes": 69
+          },
+          "light": {
+            "count": 32,
+            "minutes": 205,
+            "thirtyDayAvgMinutes": 202
+          },
+          "rem": {
+            "count": 11,
+            "minutes": 75,
+            "thirtyDayAvgMinutes": 87
+          },
+          "wake": {
+            "count": 30,
+            "minutes": 78,
+            "thirtyDayAvgMinutes": 55
+          }
+        }
+      },
+      "logId": 26013218219,
+      "minutesAfterWakeup": 0,
+      "minutesAsleep": 384,
+      "minutesAwake": 78,
+      "minutesToFallAsleep": 0,
+      "logType": "auto_detected",
+      "startTime": "2020-02-20T23:21:30.000",
+      "timeInBed": 462,
+      "type": "stages"
+    }
+  ],
+  "summary": {
+    "stages": {
+      "deep": 104,
+      "light": 205,
+      "rem": 75,
+      "wake": 78
+    },
+    "totalMinutesAsleep": 384,
+    "totalSleepRecords": 1,
+    "totalTimeInBed": 462
+  }
+}
+
+type SimplifiedSleepData = {
+  duration: number
+  efficiency: number
+  minutesAsleep: number
+  timeInBed: number
+  levels: {
+    summary: {
+      deep: { minutes: number }
+      light: { minutes: number }
+      rem: { minutes: number }
+      wake: { minutes: number }
+    }
+    data: {
+      dateTime: string
+      level: "wake" | "light" | "deep" | "rem"
+      seconds: number
+    }[]
+  }
+}
+
+type ExtendedSleepData = SimplifiedSleepData & {
+  startTime: string
+  endTime: string
+}
+
+
 export default function Tile({title, type, onRemove}: TileProps) {
 
     const totalCalories = getTotalCalories(ACTIVITYdata);
@@ -227,6 +353,39 @@ const totalDistance = getTotalDistance(ACTIVITYdata);
 const activeMinutes = getActiveMinutes(ACTIVITYdata);
 const floors = getFloors(ACTIVITYdata);
 const sedentaryMinutes = getSedentaryMinutes(ACTIVITYdata);
+
+const allowedLevels = ['deep', 'light', 'rem', 'wake'] as const
+
+const sanitizedSLEEP = {
+  ...SLEEPdata,
+  levels: {
+      ...SLEEPdata.sleep[0].levels,
+      data: SLEEPdata.sleep[0].levels.data.filter((d: { level: string }) =>
+                                                  allowedLevels.includes(d.level as any)
+                                                 )
+  },
+}
+const raw = sanitizedSLEEP.sleep[0]
+const sleepData: ExtendedSleepData = {
+  duration: raw.duration,
+  efficiency: raw.efficiency,
+  minutesAsleep: raw.minutesAsleep,
+  timeInBed: raw.timeInBed,
+  startTime: raw.startTime,
+  endTime: raw.endTime,
+  levels: {
+    summary: {
+      deep: raw.levels.summary.deep || { minutes: 0 },
+      light: raw.levels.summary.light || { minutes: 0 },
+      rem: raw.levels.summary.rem || { minutes: 0 },
+      wake: raw.levels.summary.wake || { minutes: 0 },
+    },
+    data: raw.levels.data.filter(d =>
+      ["wake", "light", "deep", "rem"].includes(d.level)
+    ) as SimplifiedSleepData["levels"]["data"]
+  }
+}
+
 
 
 
@@ -254,6 +413,7 @@ const sedentaryMinutes = getSedentaryMinutes(ACTIVITYdata);
   {type === "sedentary" && <Sedentary data={sedentaryMinutes} />}
   {type === "heartZones" && <HeartRateZones zones={zones} />}
   {type === "recentActivity" && <RecentActivity data={recentActivities} />}
+  {type === "sleep" && <Sleep data={sleepData} />}
       </div>
 
     </div>
