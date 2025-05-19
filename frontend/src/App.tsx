@@ -60,6 +60,10 @@ function groupTilesIntoRows(tiles: string[]): { id: string; x_size: number }[] {
 
 export default function App() {
   const [tiles, setTiles] = useState(initialTiles);
+  const [selectedDate, setSelectedDate] = useState(() => {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+  });
 
   const removeTile = (id: string) => {
     setTiles((tiles) => tiles.filter((tile) => tile !== id));
@@ -84,7 +88,7 @@ export default function App() {
 
   return (
     <div>
-      <Header />
+    <Header selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
       <main className="grid grid-cols-12 auto-rows-[minmax(100px,_auto)] gap-4 px-8 bg-[#0a0f2c] min-h-screen text-white">
         {arrangedTiles.map((tile, index) => (
           <DraggableTile
