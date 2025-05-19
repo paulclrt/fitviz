@@ -4,9 +4,9 @@ interface FloorsProps {
 
 export function Floors({ data }: FloorsProps) {
   return (
-    <div>
-      <h1>{data}</h1>
-      <p>Floors</p>
+    <div className="flex flex-col items-center">
+      <h1 className="text-6xl">{data}</h1>
+      <p className="text-2xl">Floors Climbed</p>
     </div>
   )
 }

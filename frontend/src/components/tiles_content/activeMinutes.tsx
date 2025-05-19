@@ -4,9 +4,9 @@ interface ActiveMinutesProps {
 
 export function ActiveMinutes({ data }: ActiveMinutesProps) {
   return (
-    <div>
-      <h1>{data}</h1>
-      <p>Active Minutes</p>
+    <div className="flex flex-col items-center">
+      <h1 className="text-6xl text-green-400">{data}</h1>
+      <p className="text-2xl">Active Minutes</p>
     </div>
   )
 }

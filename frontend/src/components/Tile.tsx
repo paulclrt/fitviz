@@ -247,7 +247,7 @@ const sedentaryMinutes = getSedentaryMinutes(ACTIVITYdata);
       <div className="flex justify-center items-center h-full">
       {type === "BPM" && <BPM title={title} data={BPMdata} />}
   {type === "calories" && <Calories data={totalCalories} />}
-  {type === "steps" && <Steps data={totalSteps} />}
+  {type === "steps" && <Steps data={totalSteps} goal={10000} />}
   {type === "distance" && <Distance data={totalDistance} />}
   {type === "floors" && <Floors data={floors} />}
   {type === "activeMinutes" && <ActiveMinutes data={activeMinutes} />}
