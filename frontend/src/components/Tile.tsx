@@ -1,4 +1,4 @@
-import React , { useEffect } from "react"
+import React , { useEffect, useState } from "react"
 
 import BPM from "./tiles_content/BPM"
 import Calories from "./tiles_content/calories"
@@ -11,6 +11,8 @@ import { Floors } from "./tiles_content/floorsClimbed"
 import { HeartRateZones } from "./tiles_content/HRzones"
 import { Sedentary } from "./tiles_content/sedentaryMinutes"
 import { Steps } from "./tiles_content/Steps"
+import { HRVDaily } from "./tiles_content/HRVDaily"
+import { HRVContinuous } from "./tiles_content/HRVContinuous"
 
 interface TileProps {
   title: string
@@ -19,177 +21,358 @@ interface TileProps {
 }
 
 
-const ACTIVITYdata = {
-  "activities": [],
-  "goals": {
-    "activeMinutes": 30,
-    "caloriesOut": 1950,
-    "distance": 8.05,
-    "floors": 10,
-    "steps": 6800
-  },
-  "summary": {
-    "activeScore": -1,
-    "activityCalories": 525,
-    "calorieEstimationMu": 2241,
-    "caloriesBMR": 1973,
-    "caloriesOut": 2628,
-    "caloriesOutUnestimated": 2628,
-    "customHeartRateZones": [
-      {
-        "caloriesOut": 2616.7788,
-        "max": 140,
-        "min": 30,
-        "minutes": 1432,
-        "name": "Below"
-      },
-      {
-        "caloriesOut": 0,
-        "max": 165,
-        "min": 140,
-        "minutes": 0,
-        "name": "Custom Zone"
-      },
-      {
-        "caloriesOut": 0,
-        "max": 220,
-        "min": 165,
-        "minutes": 0,
-        "name": "Above"
-      }
-    ],
-    "distances": [
-      {
-        "activity": "total",
-        "distance": 1.26
-      },
-      {
-        "activity": "tracker",
-        "distance": 1.26
-      },
-      {
-        "activity": "loggedActivities",
-        "distance": 0
-      },
-      {
-        "activity": "veryActive",
-        "distance": 0
-      },
-      {
-        "activity": "moderatelyActive",
-        "distance": 0
-      },
-      {
-        "activity": "lightlyActive",
-        "distance": 1.25
-      },
-      {
-        "activity": "sedentaryActive",
-        "distance": 0
-      }
-    ],
-    "elevation": 0,
-    "fairlyActiveMinutes": 0,
-    "floors": 0,
-    "heartRateZones": [
-      {
-        "caloriesOut": 1200.33336,
-        "max": 86,
-        "min": 30,
-        "minutes": 812,
-        "name": "Out of Range"
-      },
-      {
-        "caloriesOut": 1409.4564,
-        "max": 121,
-        "min": 86,
-        "minutes": 619,
-        "name": "Fat Burn"
-      },
-      {
-        "caloriesOut": 6.98904,
-        "max": 147,
-        "min": 121,
-        "minutes": 1,
-        "name": "Cardio"
-      },
-      {
-        "caloriesOut": 0,
-        "max": 220,
-        "min": 147,
-        "minutes": 0,
-        "name": "Peak"
-      }
-    ],
-    "lightlyActiveMinutes": 110,
-    "marginalCalories": 281,
-    "restingHeartRate": 77,
-    "sedentaryMinutes": 802,
-    "steps": 1698,
-    "useEstimation": true,
-    "veryActiveMinutes": 0
-  }
+type ECGReading = {
+  startTime: string;
+  averageHeartRate: number;
+  resultClassification: string;
+  waveformSamples: number[];
+  samplingFrequencyHz: string;
+  scalingFactor: number;
+  numberOfWaveformSamples: number;
+  leadNumber: number;
+  featureVersion: string;
+  deviceName: string;
+  firmwareVersion: string;
+};
+
+type ECGResponse = {
+  ecgReadings: ECGReading[];
+  pagination: {
+    afterDate: string;
+    limit: number;
+    next: string;
+    offset: number;
+    previous: string;
+    sort: string;
+  };
+};
+
+interface SleepLevelData {
+  dateTime: string;
+  level: "wake" | "light" | "deep" | "rem";
+  seconds: number;
 }
 
-function getTotalCalories(data: any) {
+interface SleepLevelSummary {
+  count: number;
+  minutes: number;
+  thirtyDayAvgMinutes: number;
+}
+
+interface SleepLevels {
+  data: SleepLevelData[];
+  shortData: SleepLevelData[];
+  summary: {
+    deep: SleepLevelSummary;
+    light: SleepLevelSummary;
+    rem: SleepLevelSummary;
+    wake: SleepLevelSummary;
+  };
+}
+
+interface SleepLog {
+  dateOfSleep: string;
+  duration: number;
+  efficiency: number;
+  endTime: string;
+  infoCode: number;
+  isMainSleep: boolean;
+  levels: SleepLevels;
+  logId: number;
+  minutesAfterWakeup: number;
+  minutesAsleep: number;
+  minutesAwake: number;
+  minutesToFallAsleep: number;
+  logType: string;
+  startTime: string;
+  timeInBed: number;
+  type: "stages";
+}
+
+interface SleepSummaryData {
+  deep: number;
+  light: number;
+  rem: number;
+  wake: number;
+}
+
+interface SleepSummary {
+  stages: SleepSummaryData;
+  totalMinutesAsleep: number;
+  totalSleepRecords: number;
+  totalTimeInBed: number;
+}
+
+interface SleepResponse {
+  sleep: SleepLog[];
+  summary: SleepSummary;
+}
+
+
+type CaloriesData = number;
+type StepsData = number;
+type DistanceData = number;
+type FloorsData = number;
+type ActiveMinutesData = number;
+type SedentaryMinutesData = number;
+type HeartZonesData = {
+  outOfRange: number;
+  fatBurn: number;
+  cardio: number;
+  peak: number;
+};
+// RECENT ACTIVITY
+interface ActivityLevel {
+  minutes: number;
+  name: "sedentary" | "lightly" | "fairly" | "very";
+}
+
+interface ManualValuesSpecified {
+  calories: boolean;
+  distance: boolean;
+  steps: boolean;
+}
+
+interface Activity {
+  activeDuration: number;
+  activityLevel: ActivityLevel[];
+  activityName: string;
+  activityTypeId: number;
+  calories: number;
+  caloriesLink: string;
+  duration: number;
+  elevationGain: number;
+  lastModified: string;
+  logId: number;
+  logType: string;
+  manualValuesSpecified: ManualValuesSpecified;
+  originalDuration: number;
+  originalStartTime: string;
+  startTime: string;
+  steps: number;
+  tcxLink: string;
+}
+
+interface Pagination {
+  afterDate: string;
+  limit: number;
+  next: string;
+  offset: number;
+  previous: string;
+  sort: "asc" | "desc";
+}
+
+interface RecentActivity {
+  activities: Activity[];
+  pagination: Pagination;
+}
+
+
+// Helper
+const fetchFitbit = async (endpoint: string) => {
+  const token = localStorage.getItem("fitbit_access_token");
+  if (!token) throw new Error("Missing access token");
+
+  const res = await fetch(`${endpoint}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!res.ok) throw new Error(`Fitbit API error: ${res.status}`);
+  return res.json();
+};
+
+// Requests
+
+
+
+
+const fetchECGData = async (afterDate = "2025-05-10"): Promise<ECGResponse> => {
+  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${afterDate}&sort=asc&limit=10&offset=0`);
+  return data;
+};
+
+const fetchCalories = async (): Promise<CaloriesData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
   return data.summary.caloriesOut;
-}
+};
 
-function getTotalSteps(data: any) {
+const fetchSleepData = async (): Promise<SleepResponse> => {
+  const data = await fetchFitbit(`/1.2/user/-/sleep/date/2025-05-20.json`);
+  return data as SleepResponse;
+};
+
+const fetchSteps = async (): Promise<StepsData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
   return data.summary.steps;
+};
+
+const fetchDistance = async (): Promise<DistanceData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+  return data.summary.distances.find((d: any) => d.activity === "total").distance;
+};
+
+const fetchFloors = async (): Promise<FloorsData> => { // wrong endpoint TODO
+  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+  return data.summary.floors;
+};
+
+const fetchActiveMinutes = async (): Promise<ActiveMinutesData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+  return data.summary.fairlyActiveMinutes + data.summary.veryActiveMinutes;
+};
+
+const fetchSedentaryMinutes = async (): Promise<SedentaryMinutesData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+  return data.summary.sedentaryMinutes;
+};
+
+const fetchRecentActivity = async (): Promise<RecentActivity> => {
+  const data = await fetchFitbit(`/1/user/-/activities/list.json?beforeDate=2025-05-20&sort=desc&limit=5&offset=0`);
+  return data.activities;
+};
+
+interface HRVData {
+    dailyRmssd: number
+    deepRmssd: number
+}
+interface HRVDay {
+    value: HRVData
+    dateTime: string
 }
 
-function getRecentActivity(data: any) {
-  return data.activities.map((activity: any) => ({
-    name: activity.name || "Unnamed Activity",
-    calories: activity.calories
-  }));
+const fetchHRVDay = async (): Promise<HRVDay> => {
+  const data = await fetchFitbit(` /1/user/-/hrv/date/2025-05-20.json`);
+  return data.hrv;
+};
+
+interface HRVcontinuous {
+    data: HRVDay[] // yes very weird but that's the same format
 }
 
-export function getHeartRateZones(data: any): { name: string; minutes: number }[] {
-  return (data?.summary?.heartRateZones ?? []).map((z: any) => ({
-    name: z.name,
-    minutes: z.minutes
-  }));
-}
+// throughout day HRV
+const fetchHRVcontinuous = async (): Promise<HRVcontinuous> => {
+  const data = await fetchFitbit(` /1/user/-/hrv/date/2025-05-20/2025-05-21.json`); //TODO fix the date+1 error (30/31 -> 1)
+  return data.hrv;
+};
 
-// Distance (total)
-export function getTotalDistance(data: any): number {
-  const total = data?.summary?.distances?.find((d: any) => d.activity === "total");
-  return total?.distance ?? 0;
-}
+// TODO maybe do this in the future... but not priority right now (20/05/2025)
+/*
+const fetchHeartZones = async (): Promise<HeartZonesData> => {
+  const data = await fetchFitbit(
+    `/1/user/-/activities/heart/date/today/1d.json`
+  );
 
-// Active minutes
-export function getActiveMinutes(data: any): number {
-  return data?.summary?.lightlyActiveMinutes + data?.summary?.fairlyActiveMinutes + data?.summary?.veryActiveMinutes ?? 0;
-}
+  const levels = data.activities?.[0]?.activityLevel || [];
 
-// Floors climbed
-export function getFloors(data: any): number {
-  return data?.summary?.floors ?? 0;
-}
+  const zoneMap: Record<string, number> = {
+    outOfRange: 0,
+    fatBurn: 0,
+    cardio: 0,
+    peak: 0,
+  };
 
-// Sedentary minutes
-export function getSedentaryMinutes(data: any): number {
-  return data?.summary?.sedentaryMinutes ?? 0;
-}
-
-
-
-
-const HRVdata =  {
-  "hrv": [
-    {
-      "value": {
-        "dailyRmssd": 34.938,
-        "deepRmssd": 31.567
-      },
-      "dateTime": "2021-10-25"
+  for (const level of levels) {
+    switch (level.name) {
+      case 'sedentary':
+        zoneMap.outOfRange += level.minutes;
+        break;
+      case 'lightly':
+        zoneMap.fatBurn += level.minutes;
+        break;
+      case 'fairly':
+        zoneMap.cardio += level.minutes;
+        break;
+      case 'very':
+        zoneMap.peak += level.minutes;
+        break;
     }
-  ]
-}     
+  }
 
-const BPMdata = {
+  return {
+    outOfRange: zoneMap.outOfRange,
+    fatBurn: zoneMap.fatBurn,
+    cardio: zoneMap.cardio,
+    peak: zoneMap.peak,
+  };
+};
+*/
+
+
+
+
+
+
+//
+// const HRVdata =  {
+//   "hrv": [
+//     {
+//       "value": {
+//         "dailyRmssd": 34.938,
+//         "deepRmssd": 31.567
+//       },
+//       "dateTime": "2021-10-25"
+//     }
+//   ]
+// }     
+//
+
+
+
+export default function Tile({title, type, onRemove}: TileProps) {
+    const [caloriesData, setCaloriesData] = useState<number | null>(null);
+    const [sleepData, setSleepData] = useState<SleepResponse | null>(null);
+    const [stepsData, setStepsData] = useState<number | null>(null);
+    const [distanceData, setDistanceData] = useState<number | null>(null);
+    const [floorsData, setFloorsData] = useState<number | null>(null);
+    const [activeMinutesData, setActiveMinutesData] = useState<number | null>(null);
+    const [sedentaryMinutesData, setSedentaryMinutesData] = useState<number | null>(null);
+    const [heartZonesData, setHeartZonesData] = useState<HeartZonesData | null>(null);
+    const [recentActivityData, setRecentActivityData] = useState<RecentActivity | null>(null);
+    const [bpmData, setBpmData] = useState<ECGResponse | null>(null);
+    const [hrvDailyData, setHrvDailyData] = useState<HRVDay | null>(null);
+    const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
+
+
+
+    useEffect(() => {
+  const loadData = async () => {
+    // try {
+    //   if (type === "calories") {
+    //     setCaloriesData(await fetchCalories());
+    //   } else if (type === "sleep") {
+    //     setSleepData(await fetchSleepSummary());
+    //   } else if (type === "steps") {
+    //     setStepsData(await fetchSteps());
+    //   } else if (type === "distance") {
+    //     setDistanceData(await fetchDistance());
+    //   } else if (type === "floors") {
+    //     setFloorsData(await fetchFloors());
+    //   } else if (type === "activeMinutes") {
+    //     setActiveMinutesData(await fetchActiveMinutes());
+    //   } else if (type === "sedentary") {
+    //     setSedentaryMinutesData(await fetchSedentaryMinutes());
+    //   } else if (type === "heartZones") {
+    //     setHeartZonesData(await fetchHeartZones());
+    //   } else if (type === "recentActivity") {
+    //     setRecentActivityData(await fetchRecentActivity());
+    //   } else if (type === "BPM") {
+    //     setBpmData(await fetchECGData());
+    //   }  else if (type === "hrvDaily") {
+         //   const data = await fetchHRVDay();
+         //   setHrvDailyData(data);
+         // } else if (type === "hrvContinuous") {
+         //   const data = await fetchHRVcontinuous();
+         //   setHrvContinuousData(data.data);
+         // }
+
+    // } catch (err) {
+    //   console.error(`Failed to fetch Fitbit data for type=${type}:`, err);
+    // }
+    setBpmData(
+{
     "ecgReadings": [
     {
         "startTime": "2022-09-28T17:12:30.222",
@@ -217,9 +400,9 @@ const BPMdata = {
         "sort": "asc"
     }
 }
-
-
-const SLEEPdata= {
+    )
+    setSleepData(
+{
   "sleep": [
     {
       "dateOfSleep": "2020-02-21",
@@ -316,75 +499,12 @@ const SLEEPdata= {
     "totalTimeInBed": 462
   }
 }
+    );
+  };
 
-type SimplifiedSleepData = {
-  duration: number
-  efficiency: number
-  minutesAsleep: number
-  timeInBed: number
-  levels: {
-    summary: {
-      deep: { minutes: number }
-      light: { minutes: number }
-      rem: { minutes: number }
-      wake: { minutes: number }
-    }
-    data: {
-      dateTime: string
-      level: "wake" | "light" | "deep" | "rem"
-      seconds: number
-    }[]
-  }
-}
+  loadData();
+}, [type]);
 
-type ExtendedSleepData = SimplifiedSleepData & {
-  startTime: string
-  endTime: string
-}
-
-
-export default function Tile({title, type, onRemove}: TileProps) {
-
-    const totalCalories = getTotalCalories(ACTIVITYdata);
-const totalSteps = getTotalSteps(ACTIVITYdata);
-const recentActivities = getRecentActivity(ACTIVITYdata);
-const zones = getHeartRateZones(ACTIVITYdata);
-const totalDistance = getTotalDistance(ACTIVITYdata);
-const activeMinutes = getActiveMinutes(ACTIVITYdata);
-const floors = getFloors(ACTIVITYdata);
-const sedentaryMinutes = getSedentaryMinutes(ACTIVITYdata);
-
-const allowedLevels = ['deep', 'light', 'rem', 'wake'] as const
-
-const sanitizedSLEEP = {
-  ...SLEEPdata,
-  levels: {
-      ...SLEEPdata.sleep[0].levels,
-      data: SLEEPdata.sleep[0].levels.data.filter((d: { level: string }) =>
-                                                  allowedLevels.includes(d.level as any)
-                                                 )
-  },
-}
-const raw = sanitizedSLEEP.sleep[0]
-const sleepData: ExtendedSleepData = {
-  duration: raw.duration,
-  efficiency: raw.efficiency,
-  minutesAsleep: raw.minutesAsleep,
-  timeInBed: raw.timeInBed,
-  startTime: raw.startTime,
-  endTime: raw.endTime,
-  levels: {
-    summary: {
-      deep: raw.levels.summary.deep || { minutes: 0 },
-      light: raw.levels.summary.light || { minutes: 0 },
-      rem: raw.levels.summary.rem || { minutes: 0 },
-      wake: raw.levels.summary.wake || { minutes: 0 },
-    },
-    data: raw.levels.data.filter(d =>
-      ["wake", "light", "deep", "rem"].includes(d.level)
-    ) as SimplifiedSleepData["levels"]["data"]
-  }
-}
 
 
 
@@ -404,16 +524,17 @@ const sleepData: ExtendedSleepData = {
       </div>
 
       <div className="flex justify-center items-center h-full">
-      {type === "BPM" && <BPM title={title} data={BPMdata} />}
-  {type === "calories" && <Calories data={totalCalories} />}
-  {type === "steps" && <Steps data={totalSteps} goal={10000} />}
-  {type === "distance" && <Distance data={totalDistance} />}
-  {type === "floors" && <Floors data={floors} />}
-  {type === "activeMinutes" && <ActiveMinutes data={activeMinutes} />}
-  {type === "sedentary" && <Sedentary data={sedentaryMinutes} />}
-  {type === "heartZones" && <HeartRateZones zones={zones} />}
-  {type === "recentActivity" && <RecentActivity data={recentActivities} />}
-  {type === "sleep" && <Sleep data={sleepData} />}
+  {type === "calories" && <Calories data={caloriesData} />}
+  {type === "steps" && <Steps data={stepsData} goal={10000} />}
+  {type === "distance" && <Distance data={distanceData} />}
+  {type === "floors" && <Floors data={floorsData} />}
+  {type === "activeMinutes" && <ActiveMinutes data={activeMinutesData} />}
+  {type === "sedentary" && <Sedentary data={sedentaryMinutesData} />}
+      {type === "recentActivity" && <RecentActivity data={recentActivityData} />}
+      {type === "sleep" && <Sleep data={sleepData} />}
+      {type === "BPM" && <BPM title={title} data={bpmData} />}
+      {type === "hrvDaily" && <HRVDaily data={hrvDailyData} />}
+{type === "hrvContinuous" && <HRVContinuous data={hrvContinuousData} />}
       </div>
 
     </div>
@@ -423,3 +544,8 @@ const sleepData: ExtendedSleepData = {
 
 
 }
+
+
+/*
+      {type === "heartZones" && <HeartRateZones zones={heartZonesData} />}
+*/

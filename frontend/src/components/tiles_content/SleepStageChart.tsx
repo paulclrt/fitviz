@@ -16,7 +16,7 @@ interface Stage {
 }
 
 interface SleepStageChartProps {
-  stages: Stage[];
+  stages: Stage[] | null;
 }
 
 const levelColor = {
@@ -28,6 +28,7 @@ const levelColor = {
 
 export function SleepStageChart({ stages }: SleepStageChartProps) {
   useEffect(() => {
+        if (!stages || stages.length === 0) return;
     Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
     const ctx = document.getElementById("sleepStageChart") as HTMLCanvasElement;
@@ -91,6 +92,14 @@ export function SleepStageChart({ stages }: SleepStageChartProps) {
       chart.destroy();
     };
   }, [stages]);
+
+
+
+  if (!stages || stages.length === 0) return (
+    <div style={{ height: 60, width: "100%" }}>
+      <p>Sorry, no sleep data is available</p>
+    </div>
+  );
 
   return (
     <div style={{ height: 60, width: "100%" }}>
