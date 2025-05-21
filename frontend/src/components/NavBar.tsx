@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import {useNavigate } from "react-router";
 import DateSelector from "./DateSelector"
 
 interface HeaderProps {
@@ -8,6 +9,20 @@ interface HeaderProps {
 
 
 export default function Header({ selectedDate, setSelectedDate }: HeaderProps) {
+    const navigate = useNavigate();
+
+  function handleLogout() {
+    // Clear Fitbit tokens and user info
+    localStorage.removeItem("fitbit_access_token");
+    localStorage.removeItem("fitbit_refresh_token");
+    localStorage.removeItem("fitbit_user_id");
+
+    // Optionally clear the code verifier if stored
+    sessionStorage.removeItem("code_verifier");
+
+    // Redirect to login
+    navigate("/login", { replace: true });
+  }
 
   return (
     <header className="flex justify-between items-center px-6 py-4 text-sm">
@@ -17,11 +32,11 @@ export default function Header({ selectedDate, setSelectedDate }: HeaderProps) {
         </span>
       </div>
       <nav className="space-x-4">
-        <a href="#" className="hover:underline">Tutorial</a>
-        <a href="#" className="hover:underline">Dashboard</a>
-        <a href="#" className="hover:underline">Blog</a>
+        <a href="/tutorial" className="hover:underline">Tutorial</a>
+        <a href="/dashboard" className="hover:underline">Dashboard</a>
+        <a href="/blog" className="hover:underline">Blog</a>
       </nav>
-      <a href="#" className="hover:underline">Disconnect</a>
+      <a onClick={handleLogout} className="hover:underline">Disconnect</a>
     </header>
   )
 }
