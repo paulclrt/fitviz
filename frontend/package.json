@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://api.fitbit.com/",
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.2",
     "@testing-library/dom": "^10.4.0",

@@ -17,8 +17,10 @@ const tileSizes: Record<string, number> = {
   sedentary: 3,
   heartZones: 3,
   recentActivity: 3,
+  hrvday: 3,
+  hrvcontinuous: 3
 };
-const initialTiles = ["recovery", "calories", "sleep", "BPM", "steps", "distance", "floors", "activeMinutes", "sedentary", "heartZones", "recentActivity"];
+const initialTiles = ["recovery", "calories", "sleep", "BPM", "steps", "distance", "floors", "activeMinutes", "sedentary", "heartZones", "recentActivity", "hrvDaily", "hrvContinuous"];
 function groupTilesIntoRows(tiles: string[]): { id: string; x_size: number }[] {
   const rows: { id: string; x_size: number }[] = [];
   let currentRow = [];
