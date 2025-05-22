@@ -11,7 +11,7 @@ interface HRVDailyProps {
 }
 
 export function HRVDaily({ data }: HRVDailyProps) {
-  if (!data) return <p className="text-white">Loading...</p>;
+  if (data === null) return <p className="text-white">Loading...</p>;
 
   return (
     <div className="text-center text-white">

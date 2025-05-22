@@ -24,8 +24,8 @@ interface HRVContinuousProps {
 }
 
 export function HRVContinuous({ data }: HRVContinuousProps) {
-  if (!data) return <p className="text-white">Loading...</p>;
-
+  if (data === null) return <p className="text-white">Loading...</p>;
+  else {
   const labels = data.map(d => d.dateTime.split("T")[1]?.slice(0, 5) || d.dateTime);
   const rmssdValues = data.map(d => d.value.dailyRmssd);
 
@@ -61,5 +61,6 @@ export function HRVContinuous({ data }: HRVContinuousProps) {
   };
 
   return <Line data={chartData} options={options} />;
+  }
 }
 

@@ -230,8 +230,8 @@ const fetchSedentaryMinutes = async (): Promise<SedentaryMinutesData> => {
 };
 
 const fetchRecentActivity = async (): Promise<RecentActivity> => {
-  const data = await fetchFitbit(`/1/user/-/activities/list.json?beforeDate=2025-05-20&sort=desc&limit=5&offset=0`);
-  return data.activities;
+const data = await fetchFitbit(`/1/user/-/activities/list.json?afterDate=2025-05-19&sort=desc&limit=5&offset=0`);
+  return data;
 };
 
 interface HRVData {
@@ -245,7 +245,7 @@ interface HRVDay {
 
 const fetchHRVDay = async (): Promise<HRVDay> => {
   const data = await fetchFitbit(` /1/user/-/hrv/date/2025-05-20.json`);
-  return data.hrv;
+  return data.hrv[0];
 };
 
 interface HRVcontinuous {
@@ -339,169 +339,170 @@ export default function Tile({title, type, onRemove}: TileProps) {
 
     useEffect(() => {
   const loadData = async () => {
-    // try {
-    //   if (type === "calories") {
-    //     setCaloriesData(await fetchCalories());
-    //   } else if (type === "sleep") {
-    //     setSleepData(await fetchSleepSummary());
-    //   } else if (type === "steps") {
-    //     setStepsData(await fetchSteps());
-    //   } else if (type === "distance") {
-    //     setDistanceData(await fetchDistance());
-    //   } else if (type === "floors") {
-    //     setFloorsData(await fetchFloors());
-    //   } else if (type === "activeMinutes") {
-    //     setActiveMinutesData(await fetchActiveMinutes());
-    //   } else if (type === "sedentary") {
-    //     setSedentaryMinutesData(await fetchSedentaryMinutes());
-    //   } else if (type === "heartZones") {
-    //     setHeartZonesData(await fetchHeartZones());
-    //   } else if (type === "recentActivity") {
-    //     setRecentActivityData(await fetchRecentActivity());
-    //   } else if (type === "BPM") {
-    //     setBpmData(await fetchECGData());
-    //   }  else if (type === "hrvDaily") {
-         //   const data = await fetchHRVDay();
-         //   setHrvDailyData(data);
-         // } else if (type === "hrvContinuous") {
-         //   const data = await fetchHRVcontinuous();
-         //   setHrvContinuousData(data.data);
-         // }
+    try {
+      if (type === "calories") {
+        setCaloriesData(await fetchCalories());
+      } else if (type === "sleep") {
+        setSleepData(await fetchSleepData());
+      } else if (type === "steps") {
+        setStepsData(await fetchSteps());
+      } else if (type === "distance") {
+        setDistanceData(await fetchDistance());
+      } else if (type === "floors") {
+        setFloorsData(await fetchFloors());
+      } else if (type === "activeMinutes") {
+        setActiveMinutesData(await fetchActiveMinutes());
+      } else if (type === "sedentary") {
+        setSedentaryMinutesData(await fetchSedentaryMinutes());
+      // } else if (type === "heartZones") {
+      //   setHeartZonesData(await fetchHeartZones());
+      } else if (type === "recentActivity") {
+        setRecentActivityData(await fetchRecentActivity());
+      } else if (type === "BPM") {
+        setBpmData(await fetchECGData());
+      }  else if (type === "hrvDaily") {
+          const data = await fetchHRVDay();
+          setHrvDailyData(data);
+      } else if (type === "hrvContinuous") {
+          const data = await fetchHRVcontinuous();
+          setHrvContinuousData(data.data);
+      }
 
-    // } catch (err) {
-    //   console.error(`Failed to fetch Fitbit data for type=${type}:`, err);
-    // }
-    setBpmData(
-{
-    "ecgReadings": [
-    {
-        "startTime": "2022-09-28T17:12:30.222",
-        "averageHeartRate": 70,
-        "resultClassification": "Normal Sinus Rhythm",
-        "waveformSamples": [
-130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,
-            
-        ],
-        "samplingFrequencyHz": "250",
-        "scalingFactor": 10922,
-        "numberOfWaveformSamples": 7700,
-        "leadNumber": 1,
-        "featureVersion": "1.2.3-2.11-2.14",
-        "deviceName": "Sense",
-        "firmwareVersion": "1.2.3"
+    } catch (err) {
+      console.error(`Failed to fetch Fitbit data for type=${type}:`, err);
     }
-    ],
-    pagination : {
-        "afterDate": "2022-09-28T20:00:00",
-        "limit": 1,
-        "next": "https://api.fitbit.com/1/user/-/ecg/list.json?offset=10&limit=10&sort=asc&afterDate=2022-09-28T21:00:00",
-        "offset": 0,
-        "previous": "",
-        "sort": "asc"
-    }
+//     setBpmData(
+// {
+//     "ecgReadings": [
+//     {
+//         "startTime": "2022-09-28T17:12:30.222",
+//         "averageHeartRate": 70,
+//         "resultClassification": "Normal Sinus Rhythm",
+//         "waveformSamples": [
+// 130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,
+//             
+//         ],
+//         "samplingFrequencyHz": "250",
+//         "scalingFactor": 10922,
+//         "numberOfWaveformSamples": 7700,
+//         "leadNumber": 1,
+//         "featureVersion": "1.2.3-2.11-2.14",
+//         "deviceName": "Sense",
+//         "firmwareVersion": "1.2.3"
+//     }
+//     ],
+//     pagination : {
+//         "afterDate": "2022-09-28T20:00:00",
+//         "limit": 1,
+//         "next": "https://api.fitbit.com/1/user/-/ecg/list.json?offset=10&limit=10&sort=asc&afterDate=2022-09-28T21:00:00",
+//         "offset": 0,
+//         "previous": "",
+//         "sort": "asc"
+//     }
+// }
+//     )
+//     setSleepData(
+// {
+//   "sleep": [
+//     {
+//       "dateOfSleep": "2020-02-21",
+//       "duration": 27720000,
+//       "efficiency": 96,
+//       "endTime": "2020-02-21T07:03:30.000",
+//       "infoCode": 0,
+//       "isMainSleep": true,
+//       "levels": {
+//         "data": [
+//           {
+//             "dateTime": "2020-02-20T23:21:30.000",
+//             "level": "wake",
+//             "seconds": 630
+//           },
+//           {
+//             "dateTime": "2020-02-20T23:32:00.000",
+//             "level": "light",
+//             "seconds": 30
+//           },
+//           {
+//             "dateTime": "2020-02-20T23:32:30.000",
+//             "level": "deep",
+//             "seconds": 870
+//           },
+//
+//
+//           {
+//             "dateTime": "2020-02-21T06:32:30.000",
+//             "level": "light",
+//             "seconds": 1860
+//           }
+//         ],
+//         "shortData": [
+//           {
+//             "dateTime": "2020-02-21T00:10:30.000",
+//             "level": "wake",
+//             "seconds": 30
+//           },
+//           {
+//             "dateTime": "2020-02-21T00:15:00.000",
+//             "level": "wake",
+//             "seconds": 30
+//           },
+//           {
+//             "dateTime": "2020-02-21T06:18:00.000",
+//             "level": "wake",
+//             "seconds": 60
+//           }
+//         ],
+//         "summary": {
+//           "deep": {
+//             "count": 5,
+//             "minutes": 104,
+//             "thirtyDayAvgMinutes": 69
+//           },
+//           "light": {
+//             "count": 32,
+//             "minutes": 205,
+//             "thirtyDayAvgMinutes": 202
+//           },
+//           "rem": {
+//             "count": 11,
+//             "minutes": 75,
+//             "thirtyDayAvgMinutes": 87
+//           },
+//           "wake": {
+//             "count": 30,
+//             "minutes": 78,
+//             "thirtyDayAvgMinutes": 55
+//           }
+//         }
+//       },
+//       "logId": 26013218219,
+//       "minutesAfterWakeup": 0,
+//       "minutesAsleep": 384,
+//       "minutesAwake": 78,
+//       "minutesToFallAsleep": 0,
+//       "logType": "auto_detected",
+//       "startTime": "2020-02-20T23:21:30.000",
+//       "timeInBed": 462,
+//       "type": "stages"
+//     }
+//   ],
+//   "summary": {
+//     "stages": {
+//       "deep": 104,
+//       "light": 205,
+//       "rem": 75,
+//       "wake": 78
+//     },
+//     "totalMinutesAsleep": 384,
+//     "totalSleepRecords": 1,
+//     "totalTimeInBed": 462
+//   }
+// }
+//     );
+//   };
+//
 }
-    )
-    setSleepData(
-{
-  "sleep": [
-    {
-      "dateOfSleep": "2020-02-21",
-      "duration": 27720000,
-      "efficiency": 96,
-      "endTime": "2020-02-21T07:03:30.000",
-      "infoCode": 0,
-      "isMainSleep": true,
-      "levels": {
-        "data": [
-          {
-            "dateTime": "2020-02-20T23:21:30.000",
-            "level": "wake",
-            "seconds": 630
-          },
-          {
-            "dateTime": "2020-02-20T23:32:00.000",
-            "level": "light",
-            "seconds": 30
-          },
-          {
-            "dateTime": "2020-02-20T23:32:30.000",
-            "level": "deep",
-            "seconds": 870
-          },
-
-
-          {
-            "dateTime": "2020-02-21T06:32:30.000",
-            "level": "light",
-            "seconds": 1860
-          }
-        ],
-        "shortData": [
-          {
-            "dateTime": "2020-02-21T00:10:30.000",
-            "level": "wake",
-            "seconds": 30
-          },
-          {
-            "dateTime": "2020-02-21T00:15:00.000",
-            "level": "wake",
-            "seconds": 30
-          },
-          {
-            "dateTime": "2020-02-21T06:18:00.000",
-            "level": "wake",
-            "seconds": 60
-          }
-        ],
-        "summary": {
-          "deep": {
-            "count": 5,
-            "minutes": 104,
-            "thirtyDayAvgMinutes": 69
-          },
-          "light": {
-            "count": 32,
-            "minutes": 205,
-            "thirtyDayAvgMinutes": 202
-          },
-          "rem": {
-            "count": 11,
-            "minutes": 75,
-            "thirtyDayAvgMinutes": 87
-          },
-          "wake": {
-            "count": 30,
-            "minutes": 78,
-            "thirtyDayAvgMinutes": 55
-          }
-        }
-      },
-      "logId": 26013218219,
-      "minutesAfterWakeup": 0,
-      "minutesAsleep": 384,
-      "minutesAwake": 78,
-      "minutesToFallAsleep": 0,
-      "logType": "auto_detected",
-      "startTime": "2020-02-20T23:21:30.000",
-      "timeInBed": 462,
-      "type": "stages"
-    }
-  ],
-  "summary": {
-    "stages": {
-      "deep": 104,
-      "light": 205,
-      "rem": 75,
-      "wake": 78
-    },
-    "totalMinutesAsleep": 384,
-    "totalSleepRecords": 1,
-    "totalTimeInBed": 462
-  }
-}
-    );
-  };
-
   loadData();
 }, [type]);
 
