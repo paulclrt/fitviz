@@ -185,8 +185,34 @@ interface RecentActivity {
 //   return res.json();
 // };
 const CACHE_TTL = 1000 * 60 * 60 * 2; // 2 hours
+const CLEAN_INTERVAL = 1000 * 60 * 30; // cleaning cache is not allowed if last clean was 30 minutes ago: TODO: implement a force clean button or something
+const cleanExpiredCache = () => {
+  const now = Date.now();
+  const lastClean = Number(localStorage.getItem("fitbit_cache_last_cleaned") || 0);
+
+  if (now - lastClean < CLEAN_INTERVAL) return;
+
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key?.startsWith("fitbit_cache_")) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(key)!);
+        if (now - cached.timestamp > CACHE_TTL) {
+          localStorage.removeItem(key);
+        }
+      } catch {
+        localStorage.removeItem(key);
+      }
+    }
+  }
+
+  localStorage.setItem("fitbit_cache_last_cleaned", now.toString());
+};
+
+
 
 const fetchFitbit = async (endpoint: string) => {
+  cleanExpiredCache(); // clean old entries on each call - FIXED: CACHE max frequency is 30 minutes now
   const key = endpoint.trim();
   const now = Date.now();
 
