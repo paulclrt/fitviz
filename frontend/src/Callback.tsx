@@ -45,7 +45,7 @@ export default function Callback() {
         localStorage.setItem("fitbit_user_id", data.user_id);
 
         // Redirect to home or dashboard
-        navigate("/");
+        navigate("/dashboard");
       } catch (e) {
         alert((e as Error).message);
       }
