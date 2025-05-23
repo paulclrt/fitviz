@@ -169,11 +169,43 @@ interface RecentActivity {
 
 
 // Helper
+// const fetchFitbit = async (endpoint: string) => {
+//   const token = localStorage.getItem("fitbit_access_token");
+//   if (!token) throw new Error("Missing access token");
+//
+//   const res = await fetch(`${endpoint}`, {
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       Accept: "application/json",
+//     },
+//   });
+//
+//   if (!res.ok) throw new Error(`Fitbit API error: ${res.status}`);
+//   return res.json();
+// };
+const CACHE_TTL = 1000 * 60 * 60 * 2; // 2 hours
+
 const fetchFitbit = async (endpoint: string) => {
+  const key = endpoint.trim();
+  const now = Date.now();
+
+  // Check localStorage cache
+  const cachedRaw = localStorage.getItem("fitbit_cache_" + key);
+  if (cachedRaw) {
+    try {
+      const cached = JSON.parse(cachedRaw);
+      if (now - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+
   const token = localStorage.getItem("fitbit_access_token");
   if (!token) throw new Error("Missing access token");
 
-  const res = await fetch(`${endpoint}`, {
+  const res = await fetch(key, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
@@ -181,16 +213,26 @@ const fetchFitbit = async (endpoint: string) => {
   });
 
   if (!res.ok) throw new Error(`Fitbit API error: ${res.status}`);
-  return res.json();
+
+  const data = await res.json();
+
+  // Save to cache
+  localStorage.setItem(
+    "fitbit_cache_" + key,
+    JSON.stringify({ data, timestamp: now })
+  );
+
+  return data;
 };
+
 
 // Requests
 
 
 
 
-const fetchECGData = async (afterDate = "2025-05-10"): Promise<ECGResponse> => {
-  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${afterDate}&sort=asc&limit=10&offset=0`);
+const fetchECGData = async (afterDate = "2025-05-20"): Promise<ECGResponse> => {
+  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${afterDate}&sort=asc&offset=0`);
   return data;
 };
 
@@ -535,7 +577,6 @@ export default function Tile({title, type, onRemove}: TileProps) {
       {type === "sleep" && <Sleep data={sleepData} />}
       {type === "BPM" && <BPM title={title} data={bpmData} />}
       {type === "hrvDaily" && <HRVDaily data={hrvDailyData} />}
-{type === "hrvContinuous" && <HRVContinuous data={hrvContinuousData} />}
       </div>
 
     </div>
@@ -548,5 +589,6 @@ export default function Tile({title, type, onRemove}: TileProps) {
 
 
 /*
+{type === "hrvContinuous" && <HRVContinuous data={hrvContinuousData} />}
       {type === "heartZones" && <HeartRateZones zones={heartZonesData} />}
 */
