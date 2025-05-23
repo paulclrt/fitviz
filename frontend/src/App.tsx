@@ -106,6 +106,7 @@ export default function App() {
               title={tile.id}
               type={tile.id}
               onRemove={() => removeTile(tile.id)}
+              selectedDate={selectedDate}
             />
           </DraggableTile>
         ))}

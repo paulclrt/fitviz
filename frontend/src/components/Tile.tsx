@@ -18,6 +18,7 @@ interface TileProps {
   title: string
   type: string
   onRemove: () => void
+  selectedDate: string
 }
 
 
@@ -231,48 +232,48 @@ const fetchFitbit = async (endpoint: string) => {
 
 
 
-const fetchECGData = async (afterDate = "2025-05-20"): Promise<ECGResponse> => {
-  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${afterDate}&sort=asc&offset=0`);
+const fetchECGData = async (selectedDate: string): Promise<ECGResponse> => {
+  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${selectedDate}&sort=asc&offset=0`);
   return data;
 };
 
-const fetchCalories = async (): Promise<CaloriesData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+const fetchCalories = async (selectedDate: string): Promise<CaloriesData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
   return data.summary.caloriesOut;
 };
 
-const fetchSleepData = async (): Promise<SleepResponse> => {
-  const data = await fetchFitbit(`/1.2/user/-/sleep/date/2025-05-20.json`);
+const fetchSleepData = async (selectedDate: string): Promise<SleepResponse> => {
+  const data = await fetchFitbit(`/1.2/user/-/sleep/date/${selectedDate}.json`);
   return data as SleepResponse;
 };
 
-const fetchSteps = async (): Promise<StepsData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+const fetchSteps = async (selectedDate: string): Promise<StepsData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
   return data.summary.steps;
 };
 
-const fetchDistance = async (): Promise<DistanceData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+const fetchDistance = async (selectedDate: string): Promise<DistanceData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
   return data.summary.distances.find((d: any) => d.activity === "total").distance;
 };
 
-const fetchFloors = async (): Promise<FloorsData> => { // wrong endpoint TODO
-  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+const fetchFloors = async (selectedDate: string): Promise<FloorsData> => { // wrong endpoint TODO
+  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
   return data.summary.floors;
 };
 
-const fetchActiveMinutes = async (): Promise<ActiveMinutesData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+const fetchActiveMinutes = async (selectedDate: string): Promise<ActiveMinutesData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
   return data.summary.fairlyActiveMinutes + data.summary.veryActiveMinutes;
 };
 
-const fetchSedentaryMinutes = async (): Promise<SedentaryMinutesData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/2025-05-20.json`);
+const fetchSedentaryMinutes = async (selectedDate: string): Promise<SedentaryMinutesData> => {
+  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
   return data.summary.sedentaryMinutes;
 };
 
-const fetchRecentActivity = async (): Promise<RecentActivity> => {
-const data = await fetchFitbit(`/1/user/-/activities/list.json?afterDate=2025-05-19&sort=desc&limit=5&offset=0`);
+const fetchRecentActivity = async (selectedDate: string): Promise<RecentActivity> => {
+const data = await fetchFitbit(`/1/user/-/activities/list.json?afterDate=${selectedDate}&sort=desc&limit=5&offset=0`);
   return data;
 };
 
@@ -285,8 +286,8 @@ interface HRVDay {
     dateTime: string
 }
 
-const fetchHRVDay = async (): Promise<HRVDay> => {
-  const data = await fetchFitbit(` /1/user/-/hrv/date/2025-05-20.json`);
+const fetchHRVDay = async (selectedDate: string): Promise<HRVDay> => {
+  const data = await fetchFitbit(` /1/user/-/hrv/date/${selectedDate}.json`);
   return data.hrv[0];
 };
 
@@ -295,8 +296,8 @@ interface HRVcontinuous {
 }
 
 // throughout day HRV
-const fetchHRVcontinuous = async (): Promise<HRVcontinuous> => {
-  const data = await fetchFitbit(` /1/user/-/hrv/date/2025-05-20/2025-05-21.json`); //TODO fix the date+1 error (30/31 -> 1)
+const fetchHRVcontinuous = async (selectedDate: string): Promise<HRVcontinuous> => {
+  const data = await fetchFitbit(` /1/user/-/hrv/date/${selectedDate}/2025-05-21.json`); //TODO fix the date+1 error (30/31 -> 1)
   return data.hrv;
 };
 
@@ -363,7 +364,7 @@ const fetchHeartZones = async (): Promise<HeartZonesData> => {
 
 
 
-export default function Tile({title, type, onRemove}: TileProps) {
+export default function Tile({title, type, onRemove, selectedDate}: TileProps) {
     const [caloriesData, setCaloriesData] = useState<number | null>(null);
     const [sleepData, setSleepData] = useState<SleepResponse | null>(null);
     const [stepsData, setStepsData] = useState<number | null>(null);
@@ -378,35 +379,36 @@ export default function Tile({title, type, onRemove}: TileProps) {
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
 
 
+console.log(selectedDate)
 
     useEffect(() => {
   const loadData = async () => {
     try {
       if (type === "calories") {
-        setCaloriesData(await fetchCalories());
+        setCaloriesData(await fetchCalories(selectedDate));
       } else if (type === "sleep") {
-        setSleepData(await fetchSleepData());
+        setSleepData(await fetchSleepData(selectedDate));
       } else if (type === "steps") {
-        setStepsData(await fetchSteps());
+        setStepsData(await fetchSteps(selectedDate));
       } else if (type === "distance") {
-        setDistanceData(await fetchDistance());
+        setDistanceData(await fetchDistance(selectedDate));
       } else if (type === "floors") {
-        setFloorsData(await fetchFloors());
+        setFloorsData(await fetchFloors(selectedDate));
       } else if (type === "activeMinutes") {
-        setActiveMinutesData(await fetchActiveMinutes());
+        setActiveMinutesData(await fetchActiveMinutes(selectedDate));
       } else if (type === "sedentary") {
-        setSedentaryMinutesData(await fetchSedentaryMinutes());
+        setSedentaryMinutesData(await fetchSedentaryMinutes(selectedDate));
       // } else if (type === "heartZones") {
       //   setHeartZonesData(await fetchHeartZones());
       } else if (type === "recentActivity") {
-        setRecentActivityData(await fetchRecentActivity());
+        setRecentActivityData(await fetchRecentActivity(selectedDate));
       } else if (type === "BPM") {
-        setBpmData(await fetchECGData());
+        setBpmData(await fetchECGData(selectedDate));
       }  else if (type === "hrvDaily") {
-          const data = await fetchHRVDay();
+          const data = await fetchHRVDay(selectedDate);
           setHrvDailyData(data);
       } else if (type === "hrvContinuous") {
-          const data = await fetchHRVcontinuous();
+          const data = await fetchHRVcontinuous(selectedDate);
           setHrvContinuousData(data.data);
       }
 
@@ -546,7 +548,7 @@ export default function Tile({title, type, onRemove}: TileProps) {
 //
 }
   loadData();
-}, [type]);
+}, [type, selectedDate]);
 
 
 
