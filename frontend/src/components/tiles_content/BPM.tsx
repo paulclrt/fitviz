@@ -1,4 +1,5 @@
-import React, { useEffect } from "react"
+import React, { useEffect } from "react";
+import zoomPlugin from "chartjs-plugin-zoom";
 import {
   Chart,
   LineController,
@@ -7,50 +8,63 @@ import {
   LinearScale,
   Title,
   CategoryScale,
-} from "chart.js"
+} from "chart.js";
 
-type ECGReading = {
-  startTime: string
-  averageHeartRate: number
-  resultClassification: string
-  waveformSamples: number[]
-  samplingFrequencyHz: string
-  scalingFactor: number
-  numberOfWaveformSamples: number
-  leadNumber: number
-  featureVersion: string
-  deviceName: string
-  firmwareVersion: string
+interface HeartRateZone {
+  caloriesOut: number;
+  max: number;
+  min: number;
+  minutes: number;
+  name: string;
 }
 
-type ECGResponse = {
-  ecgReadings: ECGReading[]
-  pagination: {
-    afterDate: string
-    limit: number
-    next: string
-    offset: number
-    previous: string
-    sort: string
-  }
+interface ActivitiesHeartValue {
+  customHeartRateZones: HeartRateZone[];
+  heartRateZones: HeartRateZone[];
+  restingHeartRate: number;
+}
+
+interface ActivitiesHeart {
+  dateTime: string;
+  value: ActivitiesHeartValue;
+}
+
+interface IntradayDataset {
+  time: string; // "HH:MM:SS"
+  value: number;
+}
+
+interface ActivitiesHeartIntraday {
+  dataset: IntradayDataset[];
+  datasetInterval: number;
+  datasetType: string; // e.g., "minute"
+}
+
+interface HeartRateData {
+  "activities-heart": ActivitiesHeart[];
+  "activities-heart-intraday": ActivitiesHeartIntraday;
 }
 
 interface ContentProps {
-  title: string
-  data: ECGResponse | null
+  title: string;
+  data: HeartRateData | null;
 }
 
 const chart_wrapper_style: React.CSSProperties = {
   minHeight: "100%",
   minWidth: "95%",
+  height: "30vh",
   position: "relative",
-}
+};
 const wrapper_style: React.CSSProperties = {
   minWidth: "100%",
-}
+  maxHeight: "100%",
+  minHeight: "100%",
+};
 const chart_style: React.CSSProperties = {
   maxHeight: "100%",
-}
+  minHeight: "100%",
+};
 
 export default function BPM({ title, data }: ContentProps) {
   Chart.register(
@@ -59,82 +73,105 @@ export default function BPM({ title, data }: ContentProps) {
     PointElement,
     LinearScale,
     Title,
-    CategoryScale
-  )
+    CategoryScale,
+  zoomPlugin
+  );
 
-  const reading = data?.ecgReadings?.[0]
-  const hasData = Boolean(reading?.waveformSamples?.length)
+  const intraday = data?.["activities-heart-intraday"];
+  const hasData = Boolean(intraday?.dataset?.length);
 
   useEffect(() => {
-    if (!hasData) return
+    if (!hasData) return;
 
-    const ctx = document.getElementById(`${title}_chart`) as HTMLCanvasElement
-    if (!ctx) return
+    const ctx = document.getElementById(`${title}_chart`) as HTMLCanvasElement;
+    if (!ctx) return;
 
-    const sampleRate = parseInt(reading!.samplingFrequencyHz)
-    const timeAxis = reading!.waveformSamples.map(
-      (_, i) => (i / sampleRate).toFixed(2)
-    )
+    const labels = intraday!.dataset.map((d) => d.time);
+    const values = intraday!.dataset.map((d) => d.value);
 
     const chart = new Chart(ctx, {
       type: "line",
       data: {
-        labels: timeAxis,
+        labels,
         datasets: [
           {
-            label: "ECG",
-            data: reading!.waveformSamples,
+            label: "Heart Rate (bpm)",
+            data: values,
             fill: true,
-            borderColor: "rgb(230, 23, 22)",
+            borderColor: "rgb(255, 99, 132)",
             tension: 0.1,
             pointRadius: 0,
           },
         ],
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-        },
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: { display: false },
+              tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.8)", // dark background
+                  mode: "index",
+                  intersect: false,
+                  titleColor: "#fff",
+                  bodyColor: "#fff",
+                  titleFont: { family: "Arial", size: 14, weight: "bold" },
+                  bodyFont: { family: "Arial", size: 12 },
+                  padding: 10,
+                  cornerRadius: 4,
+                  caretSize: 6,
+                  displayColors: false, // hides color box
+                  callbacks: {
+                      label: (context) => `BPM: ${context.raw}`,
+                          title: (contexts) => `Time: ${contexts[0].label}`,
+                  },
+              },
+              zoom: {
+                  pan: { enabled: true, mode: "x" },
+                  zoom: {
+                      wheel: { enabled: true },
+                      pinch: { enabled: true },
+                      mode: "x",
+                  },
+              },
+          },
+          hover: {
+              mode: "index",
+              intersect: false,
+          },
         scales: {
           x: {
             display: true,
-            title: {
-              display: true,
-              text: "Time (s)",
-            },
+            title: { display: true, text: "Time" },
+            ticks: { maxTicksLimit: 10 },
           },
           y: {
             display: true,
-            title: {
-              display: true,
-              text: "Amplitude",
-            },
+            title: { display: true, text: "BPM" },
           },
         },
       },
-    })
+    });
 
     return () => {
-      chart.destroy()
-    }
-  }, [data, title, hasData])
+      chart.destroy();
+    };
+  }, [data, title, hasData]);
 
   if (!hasData) {
     return (
       <div style={wrapper_style}>
-        <p className="text-white text-center py-4">No ECG data to display.</p>
+        <p className="text-white text-center py-4">No heart rate data to display.</p>
       </div>
-    )
+    );
   }
 
   return (
     <div style={wrapper_style}>
-      <div className="overflow-hidden margin-x-auto" style={chart_wrapper_style}>
+      <div className="overflow-hidden margin-x-auto h-full" style={chart_wrapper_style}>
         <canvas id={`${title}_chart`} style={chart_style}></canvas>
       </div>
     </div>
-  )
+  );
 }
 

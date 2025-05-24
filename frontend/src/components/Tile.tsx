@@ -14,11 +14,51 @@ import { Steps } from "./tiles_content/Steps"
 import { HRVDaily } from "./tiles_content/HRVDaily"
 import { HRVContinuous } from "./tiles_content/HRVContinuous"
 
+import json_bpm from "./heart.json"
+import json_sleep from "./sleep.json"
+import json_cardio from "./cardio_fitness.json"
+
 interface TileProps {
   title: string
   type: string
   onRemove: () => void
   selectedDate: string
+}
+
+
+interface HeartRateZone {
+  caloriesOut: number;
+  max: number;
+  min: number;
+  minutes: number;
+  name: string;
+}
+
+interface ActivitiesHeartValue {
+  customHeartRateZones: HeartRateZone[];
+  heartRateZones: HeartRateZone[];
+  restingHeartRate: number;
+}
+
+interface ActivitiesHeart {
+  dateTime: string;
+  value: ActivitiesHeartValue;
+}
+
+interface IntradayDataset {
+  time: string; // "HH:MM:SS"
+  value: number;
+}
+
+interface ActivitiesHeartIntraday {
+  dataset: IntradayDataset[];
+  datasetInterval: number;
+  datasetType: string; // e.g., "minute"
+}
+
+interface HeartRateData {
+  "activities-heart": ActivitiesHeart[];
+  "activities-heart-intraday": ActivitiesHeartIntraday;
 }
 
 
@@ -48,66 +88,109 @@ type ECGResponse = {
   };
 };
 
-interface SleepLevelData {
-  dateTime: string;
-  level: "wake" | "light" | "deep" | "rem";
-  seconds: number;
-}
+// interface SleepLevelData {
+//   dateTime: string;
+//   level: "wake" | "light" | "deep" | "rem";
+//   seconds: number;
+// }
+//
+// interface SleepLevelSummary {
+//   count: number;
+//   minutes: number;
+//   thirtyDayAvgMinutes: number;
+// }
+//
+// interface SleepLevels {
+//   data: SleepLevelData[];
+//   shortData: SleepLevelData[];
+//   summary: {
+//     deep: SleepLevelSummary;
+//     light: SleepLevelSummary;
+//     rem: SleepLevelSummary;
+//     wake: SleepLevelSummary;
+//   };
+// }
+//
+// interface SleepLog {
+//   dateOfSleep: string;
+//   duration: number;
+//   efficiency: number;
+//   endTime: string;
+//   infoCode: number;
+//   isMainSleep: boolean;
+//   levels: SleepLevels;
+//   logId: number;
+//   minutesAfterWakeup: number;
+//   minutesAsleep: number;
+//   minutesAwake: number;
+//   minutesToFallAsleep: number;
+//   logType: string;
+//   startTime: string;
+//   timeInBed: number;
+//   type: "stages";
+// }
+//
+// interface SleepSummaryData {
+//   deep: number;
+//   light: number;
+//   rem: number;
+//   wake: number;
+// }
+//
+// interface SleepSummary {
+//   stages: SleepSummaryData;
+//   totalMinutesAsleep: number;
+//   totalSleepRecords: number;
+//   totalTimeInBed: number;
+// }
+//
+// interface SleepResponse {
+//   sleep: SleepLog[];
+//   summary: SleepSummary;
+// }
 
-interface SleepLevelSummary {
-  count: number;
-  minutes: number;
-  thirtyDayAvgMinutes: number;
-}
 
-interface SleepLevels {
-  data: SleepLevelData[];
-  shortData: SleepLevelData[];
+interface SleepData {
+  sleep: SleepEntry[]
   summary: {
-    deep: SleepLevelSummary;
-    light: SleepLevelSummary;
-    rem: SleepLevelSummary;
-    wake: SleepLevelSummary;
-  };
+    stages: {
+      deep: number
+      light: number
+      rem: number
+      wake: number
+    }
+    totalMinutesAsleep: number
+    totalSleepRecords: number
+    totalTimeInBed: number
+  }
 }
 
-interface SleepLog {
-  dateOfSleep: string;
-  duration: number;
-  efficiency: number;
-  endTime: string;
-  infoCode: number;
-  isMainSleep: boolean;
-  levels: SleepLevels;
-  logId: number;
-  minutesAfterWakeup: number;
-  minutesAsleep: number;
-  minutesAwake: number;
-  minutesToFallAsleep: number;
-  logType: string;
-  startTime: string;
-  timeInBed: number;
-  type: "stages";
+interface SleepEntry {
+  awakeCount: number
+  awakeDuration: number
+  awakeningsCount: number
+  dateOfSleep: string
+  duration: number
+  efficiency: number
+  endTime: string
+  isMainSleep: boolean
+  logId: number
+  minuteData: MinuteDataEntry[]
+  minutesAfterWakeup: number
+  minutesAsleep: number
+  minutesAwake: number
+  minutesToFallAsleep: number
+  restlessCount: number
+  restlessDuration: number
+  startTime: string
+  timeInBed: number
 }
 
-interface SleepSummaryData {
-  deep: number;
-  light: number;
-  rem: number;
-  wake: number;
+interface MinuteDataEntry {
+  dateTime: string
+  value: string
 }
 
-interface SleepSummary {
-  stages: SleepSummaryData;
-  totalMinutesAsleep: number;
-  totalSleepRecords: number;
-  totalTimeInBed: number;
-}
-
-interface SleepResponse {
-  sleep: SleepLog[];
-  summary: SleepSummary;
-}
 
 
 type CaloriesData = number;
@@ -257,9 +340,15 @@ const fetchFitbit = async (endpoint: string) => {
 
 
 
+const fetchHeartRateData = async (selectedDate: string): Promise<HeartRateData> => {
+  // const data = await fetchFitbit(`/1/user/-/activities/heart/date/${selectedDate}/1d/1min/time/00:00/23:59.json`);
+  const data = json_bpm;
+  return data;
+}
 
+//useless for fitbit inspire 3 - maybe other fitbits. But not used in this app anymore
 const fetchECGData = async (selectedDate: string): Promise<ECGResponse> => {
-  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${selectedDate}&sort=asc&offset=0`);
+  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${selectedDate}&sort=asc&limit=1&offset=0`);
   return data;
 };
 
@@ -268,9 +357,13 @@ const fetchCalories = async (selectedDate: string): Promise<CaloriesData> => {
   return data.summary.caloriesOut;
 };
 
-const fetchSleepData = async (selectedDate: string): Promise<SleepResponse> => {
-  const data = await fetchFitbit(`/1.2/user/-/sleep/date/${selectedDate}.json`);
-  return data as SleepResponse;
+// const fetchSleepData = async (selectedDate: string): Promise<SleepResponse> => {
+//   const data = await fetchFitbit(`/1.2/user/-/sleep/date/${selectedDate}.json`);
+//   return data as SleepResponse;
+// };
+const fetchSleepData = async (selectedDate: string): Promise<SleepData> => {
+  const data = json_sleep;
+  return data 
 };
 
 const fetchSteps = async (selectedDate: string): Promise<StepsData> => {
@@ -392,7 +485,8 @@ const fetchHeartZones = async (): Promise<HeartZonesData> => {
 
 export default function Tile({title, type, onRemove, selectedDate}: TileProps) {
     const [caloriesData, setCaloriesData] = useState<number | null>(null);
-    const [sleepData, setSleepData] = useState<SleepResponse | null>(null);
+    // const [sleepData, setSleepData] = useState<SleepResponse | null>(null);
+    const [sleepData, setSleepData] = useState<SleepData | null>(null);
     const [stepsData, setStepsData] = useState<number | null>(null);
     const [distanceData, setDistanceData] = useState<number | null>(null);
     const [floorsData, setFloorsData] = useState<number | null>(null);
@@ -400,7 +494,7 @@ export default function Tile({title, type, onRemove, selectedDate}: TileProps) {
     const [sedentaryMinutesData, setSedentaryMinutesData] = useState<number | null>(null);
     const [heartZonesData, setHeartZonesData] = useState<HeartZonesData | null>(null);
     const [recentActivityData, setRecentActivityData] = useState<RecentActivity | null>(null);
-    const [bpmData, setBpmData] = useState<ECGResponse | null>(null);
+    const [bpmData, setBpmData] = useState<HeartRateData| null>(null);
     const [hrvDailyData, setHrvDailyData] = useState<HRVDay | null>(null);
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
 
@@ -429,7 +523,7 @@ console.log(selectedDate)
       } else if (type === "recentActivity") {
         setRecentActivityData(await fetchRecentActivity(selectedDate));
       } else if (type === "BPM") {
-        setBpmData(await fetchECGData(selectedDate));
+        setBpmData(await fetchHeartRateData(selectedDate));
       }  else if (type === "hrvDaily") {
           const data = await fetchHRVDay(selectedDate);
           setHrvDailyData(data);
@@ -441,137 +535,6 @@ console.log(selectedDate)
     } catch (err) {
       console.error(`Failed to fetch Fitbit data for type=${type}:`, err);
     }
-//     setBpmData(
-// {
-//     "ecgReadings": [
-//     {
-//         "startTime": "2022-09-28T17:12:30.222",
-//         "averageHeartRate": 70,
-//         "resultClassification": "Normal Sinus Rhythm",
-//         "waveformSamples": [
-// 130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,130, 176, 252, 365,
-//             
-//         ],
-//         "samplingFrequencyHz": "250",
-//         "scalingFactor": 10922,
-//         "numberOfWaveformSamples": 7700,
-//         "leadNumber": 1,
-//         "featureVersion": "1.2.3-2.11-2.14",
-//         "deviceName": "Sense",
-//         "firmwareVersion": "1.2.3"
-//     }
-//     ],
-//     pagination : {
-//         "afterDate": "2022-09-28T20:00:00",
-//         "limit": 1,
-//         "next": "https://api.fitbit.com/1/user/-/ecg/list.json?offset=10&limit=10&sort=asc&afterDate=2022-09-28T21:00:00",
-//         "offset": 0,
-//         "previous": "",
-//         "sort": "asc"
-//     }
-// }
-//     )
-//     setSleepData(
-// {
-//   "sleep": [
-//     {
-//       "dateOfSleep": "2020-02-21",
-//       "duration": 27720000,
-//       "efficiency": 96,
-//       "endTime": "2020-02-21T07:03:30.000",
-//       "infoCode": 0,
-//       "isMainSleep": true,
-//       "levels": {
-//         "data": [
-//           {
-//             "dateTime": "2020-02-20T23:21:30.000",
-//             "level": "wake",
-//             "seconds": 630
-//           },
-//           {
-//             "dateTime": "2020-02-20T23:32:00.000",
-//             "level": "light",
-//             "seconds": 30
-//           },
-//           {
-//             "dateTime": "2020-02-20T23:32:30.000",
-//             "level": "deep",
-//             "seconds": 870
-//           },
-//
-//
-//           {
-//             "dateTime": "2020-02-21T06:32:30.000",
-//             "level": "light",
-//             "seconds": 1860
-//           }
-//         ],
-//         "shortData": [
-//           {
-//             "dateTime": "2020-02-21T00:10:30.000",
-//             "level": "wake",
-//             "seconds": 30
-//           },
-//           {
-//             "dateTime": "2020-02-21T00:15:00.000",
-//             "level": "wake",
-//             "seconds": 30
-//           },
-//           {
-//             "dateTime": "2020-02-21T06:18:00.000",
-//             "level": "wake",
-//             "seconds": 60
-//           }
-//         ],
-//         "summary": {
-//           "deep": {
-//             "count": 5,
-//             "minutes": 104,
-//             "thirtyDayAvgMinutes": 69
-//           },
-//           "light": {
-//             "count": 32,
-//             "minutes": 205,
-//             "thirtyDayAvgMinutes": 202
-//           },
-//           "rem": {
-//             "count": 11,
-//             "minutes": 75,
-//             "thirtyDayAvgMinutes": 87
-//           },
-//           "wake": {
-//             "count": 30,
-//             "minutes": 78,
-//             "thirtyDayAvgMinutes": 55
-//           }
-//         }
-//       },
-//       "logId": 26013218219,
-//       "minutesAfterWakeup": 0,
-//       "minutesAsleep": 384,
-//       "minutesAwake": 78,
-//       "minutesToFallAsleep": 0,
-//       "logType": "auto_detected",
-//       "startTime": "2020-02-20T23:21:30.000",
-//       "timeInBed": 462,
-//       "type": "stages"
-//     }
-//   ],
-//   "summary": {
-//     "stages": {
-//       "deep": 104,
-//       "light": 205,
-//       "rem": 75,
-//       "wake": 78
-//     },
-//     "totalMinutesAsleep": 384,
-//     "totalSleepRecords": 1,
-//     "totalTimeInBed": 462
-//   }
-// }
-//     );
-//   };
-//
 }
   loadData();
 }, [type, selectedDate]);
