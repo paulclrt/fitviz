@@ -123,8 +123,12 @@ export default function BPM({ title, data }: ContentProps) {
                   displayColors: false, // hides color box
                   callbacks: {
                       label: (context) => `BPM: ${context.raw}`,
-                          title: (contexts) => `Time: ${contexts[0].label}`,
+                      title: (contexts) => {
+                          const time = contexts[0].label.split(":").slice(0, 2).join(":");
+                          return `Time: ${time}`;
+                      },
                   },
+
               },
               zoom: {
                   pan: { enabled: true, mode: "x" },
@@ -142,12 +146,19 @@ export default function BPM({ title, data }: ContentProps) {
         scales: {
           x: {
             display: true,
-            title: { display: true, text: "Time" },
-            ticks: { maxTicksLimit: 10 },
+            title: { display: true, text: "Time", color: "#fff" },
+            ticks: { maxTicksLimit: 7, color: "#fff" },
+            grid: {
+                color: "rgba(255,255,255,0.1)",
+            },
           },
           y: {
             display: true,
-            title: { display: true, text: "BPM" },
+            title: { display: true, text: "BPM", color: "#fff" },
+            ticks: { color: "#fff" },
+            grid: {
+                color: "rgba(255,255,255,0.1)",
+            },
           },
         },
       },
