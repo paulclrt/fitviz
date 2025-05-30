@@ -1,110 +1,109 @@
-import React, { useEffect } from "react";
-import {
-  Chart,
-  BarController,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import React from "react";
 
-interface Stage {
+interface LevelDataEntry {
+  level: string;
   dateTime: string;
-  level: "wake" | "light" | "deep" | "rem";
   seconds: number;
 }
 
 interface SleepStageChartProps {
-  stages: Stage[] | null;
+  stages: LevelDataEntry[] | null;
 }
 
-const levelColor = {
+const levelColor: Record<string, string> = {
   wake: "#ef4444",
   light: "#10b981",
   deep: "#3b82f6",
   rem: "#facc15",
-} as const;
+};
 
 export function SleepStageChart({ stages }: SleepStageChartProps) {
-  useEffect(() => {
-        if (!stages || stages.length === 0) return;
-    Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+    if (!stages || stages.length === 0) {
+    return <div style={{ height: 60, width: "100%" }}>No sleep data available</div>;
+  }
 
-    const ctx = document.getElementById("sleepStageChart") as HTMLCanvasElement;
-    if (!ctx) return;
+  // Total duration in seconds for scaling
+  const totalSeconds = stages.reduce((sum, s) => sum + s.seconds, 0);
+let cumulative = 0;
+  const stagesWithStart = stages.map(stage => {
+    const start = cumulative;
+    cumulative += stage.seconds;
+    return { ...stage, start };
+  });
 
-    // Prepare data for Chart.js horizontal stacked bar
-    // Each stage is a separate segment on the timeline, so use one bar with stacked segments
-    const labels = ["Sleep Stages"];
+  // Chart dimensions
+  const width = 800; // svg width in px
+  const rowHeight = 20;
+  const rowGap = 8;
+  const rectHeight = 14;
+  const cornerRadius = 5;
 
-    // Map stages to an array of seconds per stage in order
-    const dataValues = stages.map(s => s.seconds);
-
-    // Chart.js needs dataset per segment for stacking, so create datasets where only one has value, rest 0
-    const datasets = stages.map((stage, index) => ({
-      label: stage.level,
-      data: stages.map((_, i) => (i === index ? stage.seconds : 0)),
-      backgroundColor: levelColor[stage.level],
-      barPercentage: 1,
-      categoryPercentage: 1,
-      borderSkipped: false,
-    }));
-
-    const chart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets,
-      },
-      options: {
-        indexAxis: "y",
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: "bottom" },
-          tooltip: {
-            callbacks: {
-              label: (context) => {
-                const sec = context.parsed.x;
-                const min = Math.floor(sec / 60);
-                const s = sec % 60;
-                return `${context.dataset.label}: ${min}m ${s}s`;
-              },
-            },
-          },
-        },
-        scales: {
-          x: {
-            stacked: true,
-            title: { display: true, text: "Duration (seconds)" },
-            min: 0,
-          },
-          y: {
-            stacked: true,
-            display: false,
-          },
-        },
-      },
-    });
-
-    return () => {
-      chart.destroy();
-    };
-  }, [stages]);
-
-
-
-  if (!stages || stages.length === 0) return (
-    <div style={{ height: 60, width: "100%" }}>
-      <p>Sorry, no sleep data is available</p>
-    </div>
-  );
+  // Levels and their order
+  const levels = ["wake", "light", "deep", "rem"];
 
   return (
-    <div style={{ height: 60, width: "100%" }}>
-      <canvas id="sleepStageChart" />
+    <div style={{ width: "100%", maxWidth: width }}>
+      <svg
+        width="100%"
+        height={(rowHeight + rowGap) * levels.length}
+        viewBox={`0 0 ${width} ${(rowHeight + rowGap) * levels.length}`}
+      >
+        {levels.map((level, idx) => {
+          const y = idx * (rowHeight + rowGap) + (rowHeight - rectHeight) / 2;
+
+          return (
+            <g key={level}>
+              {stagesWithStart
+                .filter(s => s.level === level)
+                .map((stage, i) => {
+                  const rectX = (stage.start / totalSeconds) * width;
+                  const rectWidth = (stage.seconds / totalSeconds) * width;
+
+                  return (
+                    <rect
+                      key={i}
+                      x={rectX}
+                      y={y}
+                      width={rectWidth}
+                      height={rectHeight}
+                      fill={levelColor[level] || "#888"}
+                      rx={cornerRadius}
+                      ry={cornerRadius}
+                    />
+                  );
+                })}
+              {/* Label on left side */}
+              <text
+                x={-10}
+                y={y + rectHeight / 2}
+                textAnchor="end"
+                alignmentBaseline="middle"
+                fontSize={12}
+                fill="#444"
+              >
+                {level.toUpperCase()}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Legend */}
+      <div style={{ marginTop: 12, display: "flex", justifyContent: "center", gap: 20 }}>
+        {levels.map(level => (
+          <div key={level} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div
+              style={{
+                width: 20,
+                height: 12,
+                backgroundColor: levelColor[level],
+                borderRadius: 4,
+              }}
+            />
+            <span style={{ fontSize: 14, textTransform: "capitalize" }}>{level}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
