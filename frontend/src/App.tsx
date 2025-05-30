@@ -20,7 +20,7 @@ const tileSizes: Record<string, number> = {
   hrvday: 3,
   hrvcontinuous: 3
 };
-const initialTiles = ["recovery", "calories", "sleep", "BPM", "steps", "distance", "floors", "activeMinutes", "sedentary", "heartZones", "recentActivity", "hrvDaily", "hrvContinuous"];
+const initialTiles = [/* "recovery", */"calories", "steps", "sleep", "BPM", "distance", "activeMinutes", "floors", "sedentary", "heartZones", "recentActivity", "hrvDaily", "hrvContinuous"];
 function groupTilesIntoRows(tiles: string[]): { id: string; x_size: number }[] {
   const rows: { id: string; x_size: number }[] = [];
   let currentRow = [];
@@ -28,22 +28,22 @@ function groupTilesIntoRows(tiles: string[]): { id: string; x_size: number }[] {
 
   for (const tile of tiles) {
     const size = tileSizes[tile] ?? 3;
-    if (rowSum + size > 12) {
-      const remaining = 12 - rowSum;
-      if (remaining >= 1) {
-        // Try to shrink last tile if possible
-        for (let i = currentRow.length - 1; i >= 0; i--) {
-          if (currentRow[i].x_size > 1 && currentRow[i].x_size - 1 >= remaining) {
-            currentRow[i].x_size -= remaining;
-            rowSum += remaining;
-            break;
-          }
-        }
-      }
-      rows.push(...currentRow);
-      currentRow = [];
-      rowSum = 0;
-    }
+    // if (rowSum + size > 12) {
+    //   const remaining = 12 - rowSum;
+    //   if (remaining >= 1) {
+    //     // Try to shrink last tile if possible
+    //     for (let i = currentRow.length - 1; i >= 0; i--) {
+    //       if (currentRow[i].x_size > 1 && currentRow[i].x_size - 1 >= remaining) {
+    //         currentRow[i].x_size -= remaining;
+    //         rowSum += remaining;
+    //         break;
+    //       }
+    //     }
+    //   }
+    //   rows.push(...currentRow);
+    //   currentRow = [];
+    //   rowSum = 0;
+    // }
 
     currentRow.push({ id: tile, x_size: size });
     rowSum += size;
