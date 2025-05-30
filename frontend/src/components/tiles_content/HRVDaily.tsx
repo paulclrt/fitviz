@@ -1,11 +1,5 @@
-interface HRVData {
-    dailyRmssd: number
-    deepRmssd: number
-}
-interface HRVDay {
-    value: HRVData
-    dateTime: string
-}
+import {HRVDay} from "../datatype/HRV"
+
 interface HRVDailyProps {
   data: HRVDay | null;
 }

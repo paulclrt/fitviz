@@ -10,45 +10,16 @@ import {
   CategoryScale,
 } from "chart.js";
 
-interface HeartRateZone {
-  caloriesOut: number;
-  max: number;
-  min: number;
-  minutes: number;
-  name: string;
-}
-
-interface ActivitiesHeartValue {
-  customHeartRateZones: HeartRateZone[];
-  heartRateZones: HeartRateZone[];
-  restingHeartRate: number;
-}
-
-interface ActivitiesHeart {
-  dateTime: string;
-  value: ActivitiesHeartValue;
-}
-
-interface IntradayDataset {
-  time: string; // "HH:MM:SS"
-  value: number;
-}
-
-interface ActivitiesHeartIntraday {
-  dataset: IntradayDataset[];
-  datasetInterval: number;
-  datasetType: string; // e.g., "minute"
-}
-
-interface HeartRateData {
-  "activities-heart": ActivitiesHeart[];
-  "activities-heart-intraday": ActivitiesHeartIntraday;
-}
+import { HeartRateData } from "../datatype/BPM"
 
 interface ContentProps {
   title: string;
   data: HeartRateData | null;
 }
+
+
+
+
 
 const chart_wrapper_style: React.CSSProperties = {
   minHeight: "100%",

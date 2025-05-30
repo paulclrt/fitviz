@@ -9,19 +9,16 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler);
+import {HRVDay} from "../datatype/HRV"
 
-interface HRVData {
-    dailyRmssd: number
-    deepRmssd: number
-}
-interface HRVDay {
-    value: HRVData
-    dateTime: string
-}
+
+
 interface HRVContinuousProps {
   data: HRVDay[] | null;
 }
+
+ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler);
+
 
 export function HRVContinuous({ data }: HRVContinuousProps) {
   if (data === null) return <p className="text-white">Loading...</p>;

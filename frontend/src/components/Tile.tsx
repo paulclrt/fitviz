@@ -1,5 +1,14 @@
 import React , { useEffect, useState } from "react"
 
+//data types
+import { RecentActivityData } from "./datatype/Activities"
+import { HeartRateData } from "./datatype/BPM"
+import { ECGResponse } from "./datatype/ECG"
+import { HeartRateZoneData } from "./datatype/HeartRateZone"
+import { CaloriesData, StepsData, DistanceData, FloorsData, ActiveMinutesData, SedentaryMinutesData } from "./datatype/Regular"
+import { SleepData } from "./datatype/Sleep"
+
+// Tiles content
 import BPM from "./tiles_content/BPM"
 import Calories from "./tiles_content/calories"
 import RecentActivity from "./tiles_content/RecentActivity"
@@ -14,6 +23,7 @@ import { Steps } from "./tiles_content/Steps"
 import { HRVDaily } from "./tiles_content/HRVDaily"
 import { HRVContinuous } from "./tiles_content/HRVContinuous"
 
+// fake/temporary data
 import json_bpm from "./heart.json"
 import json_sleep from "./sleep.json"
 import json_cardio from "./cardio_fitness.json"
@@ -25,265 +35,6 @@ interface TileProps {
   selectedDate: string
 }
 
-
-interface HeartRateZone {
-  caloriesOut: number;
-  max: number;
-  min: number;
-  minutes: number;
-  name: string;
-}
-
-interface ActivitiesHeartValue {
-  customHeartRateZones: HeartRateZone[];
-  heartRateZones: HeartRateZone[];
-  restingHeartRate: number;
-}
-
-interface ActivitiesHeart {
-  dateTime: string;
-  value: ActivitiesHeartValue;
-}
-
-interface IntradayDataset {
-  time: string; // "HH:MM:SS"
-  value: number;
-}
-
-interface ActivitiesHeartIntraday {
-  dataset: IntradayDataset[];
-  datasetInterval: number;
-  datasetType: string; // e.g., "minute"
-}
-
-interface HeartRateData {
-  "activities-heart": ActivitiesHeart[];
-  "activities-heart-intraday": ActivitiesHeartIntraday;
-}
-
-
-type ECGReading = {
-  startTime: string;
-  averageHeartRate: number;
-  resultClassification: string;
-  waveformSamples: number[];
-  samplingFrequencyHz: string;
-  scalingFactor: number;
-  numberOfWaveformSamples: number;
-  leadNumber: number;
-  featureVersion: string;
-  deviceName: string;
-  firmwareVersion: string;
-};
-
-type ECGResponse = {
-  ecgReadings: ECGReading[];
-  pagination: {
-    afterDate: string;
-    limit: number;
-    next: string;
-    offset: number;
-    previous: string;
-    sort: string;
-  };
-};
-
-// interface SleepLevelData {
-//   dateTime: string;
-//   level: "wake" | "light" | "deep" | "rem";
-//   seconds: number;
-// }
-//
-// interface SleepLevelSummary {
-//   count: number;
-//   minutes: number;
-//   thirtyDayAvgMinutes: number;
-// }
-//
-// interface SleepLevels {
-//   data: SleepLevelData[];
-//   shortData: SleepLevelData[];
-//   summary: {
-//     deep: SleepLevelSummary;
-//     light: SleepLevelSummary;
-//     rem: SleepLevelSummary;
-//     wake: SleepLevelSummary;
-//   };
-// }
-//
-// interface SleepLog {
-//   dateOfSleep: string;
-//   duration: number;
-//   efficiency: number;
-//   endTime: string;
-//   infoCode: number;
-//   isMainSleep: boolean;
-//   levels: SleepLevels;
-//   logId: number;
-//   minutesAfterWakeup: number;
-//   minutesAsleep: number;
-//   minutesAwake: number;
-//   minutesToFallAsleep: number;
-//   logType: string;
-//   startTime: string;
-//   timeInBed: number;
-//   type: "stages";
-// }
-//
-// interface SleepSummaryData {
-//   deep: number;
-//   light: number;
-//   rem: number;
-//   wake: number;
-// }
-//
-// interface SleepSummary {
-//   stages: SleepSummaryData;
-//   totalMinutesAsleep: number;
-//   totalSleepRecords: number;
-//   totalTimeInBed: number;
-// }
-//
-// interface SleepResponse {
-//   sleep: SleepLog[];
-//   summary: SleepSummary;
-// }
-
-interface SleepData {
-  sleep: SleepEntry[];
-  summary: {
-    stages: {
-      deep: number;
-      light: number;
-      rem: number;
-      wake: number;
-    };
-    totalMinutesAsleep: number;
-    totalSleepRecords: number;
-    totalTimeInBed: number;
-  };
-}
-
-
-interface LevelDataEntry {
-    level: string;
-  dateTime: string;
-  seconds: number;
-}
-
-
-interface LevelsSummary {
-  asleep?: { count: number; minutes: number };
-  awake?: { count: number; minutes: number };
-  restless?: { count: number; minutes: number };
-  deep?: { count: number; minutes: number };
-  light?: { count: number; minutes: number };
-  rem?: { count: number; minutes: number };
-  wake?: { count: number; minutes: number };
-}
-
-
-interface Levels {
-  data: LevelDataEntry[];
-  summary: LevelsSummary;
-  shortData?: any;
-}
-
-interface SleepEntry {
-  dateOfSleep: string;
-  duration: number;       // in milliseconds
-  efficiency: number;
-  endTime: string;
-  infoCode: number;
-  isMainSleep: boolean;
-  levels: Levels;
-  logId: number;
-  logType: string;
-  minutesAfterWakeup: number;
-  minutesAsleep: number;
-  minutesAwake: number;
-  minutesToFallAsleep: number;
-  startTime: string;
-  timeInBed: number;      // in minutes
-  type: string;
-}
-
-
-
-interface LevelSummary {
-  deep: LevelStats;
-  light: LevelStats;
-  rem: LevelStats;
-  wake: LevelStats;
-}
-
-interface LevelStats {
-  count: number;
-  minutes: number;
-  thirtyDayAvgMinutes: number;
-}
-
-
-
-
-
-type CaloriesData = number;
-type StepsData = number;
-type DistanceData = number;
-type FloorsData = number;
-type ActiveMinutesData = number;
-type SedentaryMinutesData = number;
-type HeartZonesData = {
-  outOfRange: number;
-  fatBurn: number;
-  cardio: number;
-  peak: number;
-};
-// RECENT ACTIVITY
-interface ActivityLevel {
-  minutes: number;
-  name: "sedentary" | "lightly" | "fairly" | "very";
-}
-
-interface ManualValuesSpecified {
-  calories: boolean;
-  distance: boolean;
-  steps: boolean;
-}
-
-interface Activity {
-  activeDuration: number;
-  activityLevel: ActivityLevel[];
-  activityName: string;
-  activityTypeId: number;
-  calories: number;
-  caloriesLink: string;
-  duration: number;
-  elevationGain: number;
-  lastModified: string;
-  logId: number;
-  logType: string;
-  manualValuesSpecified: ManualValuesSpecified;
-  originalDuration: number;
-  originalStartTime: string;
-  startTime: string;
-  steps: number;
-  tcxLink: string;
-}
-
-interface Pagination {
-  afterDate: string;
-  limit: number;
-  next: string;
-  offset: number;
-  previous: string;
-  sort: "asc" | "desc";
-}
-
-interface RecentActivity {
-  activities: Activity[];
-  pagination: Pagination;
-}
 
 
 // Helper
@@ -425,7 +176,7 @@ const fetchSedentaryMinutes = async (selectedDate: string): Promise<SedentaryMin
   return data.summary.sedentaryMinutes;
 };
 
-const fetchRecentActivity = async (selectedDate: string): Promise<RecentActivity> => {
+const fetchRecentActivity = async (selectedDate: string): Promise<RecentActivityData> => {
 const data = await fetchFitbit(`/1/user/-/activities/list.json?afterDate=${selectedDate}&sort=desc&limit=5&offset=0`);
   return data;
 };
@@ -526,8 +277,8 @@ export default function Tile({title, type, onRemove, selectedDate}: TileProps) {
     const [floorsData, setFloorsData] = useState<number | null>(null);
     const [activeMinutesData, setActiveMinutesData] = useState<number | null>(null);
     const [sedentaryMinutesData, setSedentaryMinutesData] = useState<number | null>(null);
-    const [heartZonesData, setHeartZonesData] = useState<HeartZonesData | null>(null);
-    const [recentActivityData, setRecentActivityData] = useState<RecentActivity | null>(null);
+    const [heartZonesData, setHeartZonesData] = useState<HeartRateZoneData | null>(null);
+    const [recentActivityData, setRecentActivityData] = useState<RecentActivityData | null>(null);
     const [bpmData, setBpmData] = useState<HeartRateData| null>(null);
     const [hrvDailyData, setHrvDailyData] = useState<HRVDay | null>(null);
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);

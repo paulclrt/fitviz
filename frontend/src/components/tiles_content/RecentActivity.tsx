@@ -1,53 +1,8 @@
 import "./recentActivities.css"
-
-
-interface ActivityLevel {
-  minutes: number;
-  name: "sedentary" | "lightly" | "fairly" | "very";
-}
-
-interface ManualValuesSpecified {
-  calories: boolean;
-  distance: boolean;
-  steps: boolean;
-}
-
-interface Activity {
-  activeDuration: number;
-  activityLevel: ActivityLevel[];
-  activityName: string;
-  activityTypeId: number;
-  calories: number;
-  caloriesLink: string;
-  duration: number;
-  elevationGain: number;
-  lastModified: string;
-  logId: number;
-  logType: string;
-  manualValuesSpecified: ManualValuesSpecified;
-  originalDuration: number;
-  originalStartTime: string;
-  startTime: string;
-  steps: number;
-  tcxLink: string;
-}
-
-interface Pagination {
-  afterDate: string;
-  limit: number;
-  next: string;
-  offset: number;
-  previous: string;
-  sort: "asc" | "desc";
-}
-
-interface RecentActivity {
-  activities: Activity[];
-  pagination: Pagination;
-}
+import { RecentActivityData } from "../datatype/Activities"
 
 interface RecentActivityProps {
-    data: RecentActivity | null;
+    data: RecentActivityData | null;
 }
 
 export default function RecentActivity({ data }: RecentActivityProps) {
