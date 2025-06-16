@@ -1,5 +1,20 @@
 import React , { useEffect, useState } from "react"
 
+// api calls
+import { 
+    fetchHeartRateData,
+    fetchCalories,
+    fetchSleepData,
+    fetchSteps,
+    fetchDistance,
+    fetchFloors,
+    fetchActiveMinutes,
+    fetchSedentaryMinutes,
+    fetchRecentActivity,
+    fetchHRVDay,
+    fetchHRVcontinuous
+} from "./api/serverAPI"
+
 //data types
 import { RecentActivityData } from "./datatype/Activities"
 import { HeartRateData } from "./datatype/BPM"
@@ -7,6 +22,7 @@ import { ECGResponse } from "./datatype/ECG"
 import { HeartRateZoneData } from "./datatype/HeartRateZone"
 import { CaloriesData, StepsData, DistanceData, FloorsData, ActiveMinutesData, SedentaryMinutesData } from "./datatype/Regular"
 import { SleepData } from "./datatype/Sleep"
+import { HRVDay, HRVcontinuous } from "./datatype/HRV"
 
 // Tiles content
 import BPM from "./tiles_content/BPM"
@@ -21,7 +37,7 @@ import { HeartRateZones } from "./tiles_content/HRzones"
 import { Sedentary } from "./tiles_content/sedentaryMinutes"
 import { Steps } from "./tiles_content/Steps"
 import { HRVDaily } from "./tiles_content/HRVDaily"
-import { HRVContinuous } from "./tiles_content/HRVContinuous"
+import { HRVContinue } from "./tiles_content/HRVContinue"
 
 // fake/temporary data
 import json_bpm from "./heart.json"
@@ -36,241 +52,8 @@ interface TileProps {
 }
 
 
-
-// Helper
-// const fetchFitbit = async (endpoint: string) => {
-//   const token = localStorage.getItem("fitbit_access_token");
-//   if (!token) throw new Error("Missing access token");
-//
-//   const res = await fetch(`${endpoint}`, {
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//       Accept: "application/json",
-//     },
-//   });
-//
-//   if (!res.ok) throw new Error(`Fitbit API error: ${res.status}`);
-//   return res.json();
-// };
-const CACHE_TTL = 1000 * 60 * 60 * 2; // 2 hours
-const CLEAN_INTERVAL = 1000 * 60 * 30; // cleaning cache is not allowed if last clean was 30 minutes ago: TODO: implement a force clean button or something
-const cleanExpiredCache = () => {
-  const now = Date.now();
-  const lastClean = Number(localStorage.getItem("fitbit_cache_last_cleaned") || 0);
-
-  if (now - lastClean < CLEAN_INTERVAL) return;
-
-  for (let i = localStorage.length - 1; i >= 0; i--) {
-    const key = localStorage.key(i);
-    if (key?.startsWith("fitbit_cache_")) {
-      try {
-        const cached = JSON.parse(localStorage.getItem(key)!);
-        if (now - cached.timestamp > CACHE_TTL) {
-          localStorage.removeItem(key);
-        }
-      } catch {
-        localStorage.removeItem(key);
-      }
-    }
-  }
-
-  localStorage.setItem("fitbit_cache_last_cleaned", now.toString());
-};
-
-
-
-const fetchFitbit = async (endpoint: string) => {
-  cleanExpiredCache(); // clean old entries on each call - FIXED: CACHE max frequency is 30 minutes now
-  const key = endpoint.trim();
-  const now = Date.now();
-
-  // Check localStorage cache
-  const cachedRaw = localStorage.getItem("fitbit_cache_" + key);
-  if (cachedRaw) {
-    try {
-      const cached = JSON.parse(cachedRaw);
-      if (now - cached.timestamp < CACHE_TTL) {
-        return cached.data;
-      }
-    } catch (e) {
-      // Ignore parsing errors
-    }
-  }
-
-  const token = localStorage.getItem("fitbit_access_token");
-  if (!token) throw new Error("Missing access token");
-
-  const res = await fetch(key, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-  });
-
-  if (!res.ok) throw new Error(`Fitbit API error: ${res.status}`);
-
-  const data = await res.json();
-
-  // Save to cache
-  localStorage.setItem(
-    "fitbit_cache_" + key,
-    JSON.stringify({ data, timestamp: now })
-  );
-
-  return data;
-};
-
-
-// Requests
-
-
-
-const fetchHeartRateData = async (selectedDate: string): Promise<HeartRateData> => {
-  // const data = await fetchFitbit(`/1/user/-/activities/heart/date/${selectedDate}/1d/1min/time/00:00/23:59.json`);
-  const data = json_bpm;
-  return data;
-}
-
-//useless for fitbit inspire 3 - maybe other fitbits. But not used in this app anymore
-const fetchECGData = async (selectedDate: string): Promise<ECGResponse> => {
-  const data = await fetchFitbit(`/1/user/-/ecg/list.json?afterDate=${selectedDate}&sort=asc&limit=1&offset=0`);
-  return data;
-};
-
-const fetchCalories = async (selectedDate: string): Promise<CaloriesData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
-  return data.summary.caloriesOut;
-};
-
-// const fetchSleepData = async (selectedDate: string): Promise<SleepResponse> => {
-//   const data = await fetchFitbit(`/1.2/user/-/sleep/date/${selectedDate}.json`);
-//   return data as SleepResponse;
-// };
-const fetchSleepData = async (selectedDate: string): Promise<SleepData> => {
-  const data = json_sleep;
-  return data 
-};
-
-const fetchSteps = async (selectedDate: string): Promise<StepsData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
-  return data.summary.steps;
-};
-
-const fetchDistance = async (selectedDate: string): Promise<DistanceData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
-  return data.summary.distances.find((d: any) => d.activity === "total").distance;
-};
-
-const fetchFloors = async (selectedDate: string): Promise<FloorsData> => { // wrong endpoint TODO
-  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
-  return data.summary.floors;
-};
-
-const fetchActiveMinutes = async (selectedDate: string): Promise<ActiveMinutesData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
-  return data.summary.fairlyActiveMinutes + data.summary.veryActiveMinutes;
-};
-
-const fetchSedentaryMinutes = async (selectedDate: string): Promise<SedentaryMinutesData> => {
-  const data = await fetchFitbit(`/1/user/-/activities/date/${selectedDate}.json`);
-  return data.summary.sedentaryMinutes;
-};
-
-const fetchRecentActivity = async (selectedDate: string): Promise<RecentActivityData> => {
-const data = await fetchFitbit(`/1/user/-/activities/list.json?afterDate=${selectedDate}&sort=desc&limit=5&offset=0`);
-  return data;
-};
-
-interface HRVData {
-    dailyRmssd: number
-    deepRmssd: number
-}
-interface HRVDay {
-    value: HRVData
-    dateTime: string
-}
-
-const fetchHRVDay = async (selectedDate: string): Promise<HRVDay> => {
-  const data = await fetchFitbit(` /1/user/-/hrv/date/${selectedDate}.json`);
-  return data.hrv[0];
-};
-
-interface HRVcontinuous {
-    data: HRVDay[] // yes very weird but that's the same format
-}
-
-// throughout day HRV
-const fetchHRVcontinuous = async (selectedDate: string): Promise<HRVcontinuous> => {
-  const data = await fetchFitbit(` /1/user/-/hrv/date/${selectedDate}/2025-05-21.json`); //TODO fix the date+1 error (30/31 -> 1)
-  return data.hrv;
-};
-
-// TODO maybe do this in the future... but not priority right now (20/05/2025)
-/*
-const fetchHeartZones = async (): Promise<HeartZonesData> => {
-  const data = await fetchFitbit(
-    `/1/user/-/activities/heart/date/today/1d.json`
-  );
-
-  const levels = data.activities?.[0]?.activityLevel || [];
-
-  const zoneMap: Record<string, number> = {
-    outOfRange: 0,
-    fatBurn: 0,
-    cardio: 0,
-    peak: 0,
-  };
-
-  for (const level of levels) {
-    switch (level.name) {
-      case 'sedentary':
-        zoneMap.outOfRange += level.minutes;
-        break;
-      case 'lightly':
-        zoneMap.fatBurn += level.minutes;
-        break;
-      case 'fairly':
-        zoneMap.cardio += level.minutes;
-        break;
-      case 'very':
-        zoneMap.peak += level.minutes;
-        break;
-    }
-  }
-
-  return {
-    outOfRange: zoneMap.outOfRange,
-    fatBurn: zoneMap.fatBurn,
-    cardio: zoneMap.cardio,
-    peak: zoneMap.peak,
-  };
-};
-*/
-
-
-
-
-
-
-//
-// const HRVdata =  {
-//   "hrv": [
-//     {
-//       "value": {
-//         "dailyRmssd": 34.938,
-//         "deepRmssd": 31.567
-//       },
-//       "dateTime": "2021-10-25"
-//     }
-//   ]
-// }     
-//
-
-
-
-export default function Tile({title, type, onRemove, selectedDate}: TileProps) {
+export default function Tile({title, type, selectedDate, onRemove}: TileProps) {
     const [caloriesData, setCaloriesData] = useState<number | null>(null);
-    // const [sleepData, setSleepData] = useState<SleepResponse | null>(null);
     const [sleepData, setSleepData] = useState<SleepData | null>(null);
     const [stepsData, setStepsData] = useState<number | null>(null);
     const [distanceData, setDistanceData] = useState<number | null>(null);
@@ -284,7 +67,6 @@ export default function Tile({title, type, onRemove, selectedDate}: TileProps) {
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
 
 
-console.log(selectedDate)
 
     useEffect(() => {
   const loadData = async () => {

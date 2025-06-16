@@ -20,7 +20,7 @@ interface HRVContinuousProps {
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler);
 
 
-export function HRVContinuous({ data }: HRVContinuousProps) {
+export function HRVContinue({ data }: HRVContinuousProps) {
   if (data === null) return <p className="text-white">Loading...</p>;
   else {
   const labels = data.map(d => d.dateTime.split("T")[1]?.slice(0, 5) || d.dateTime);

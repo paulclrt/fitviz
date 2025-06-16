@@ -3,7 +3,7 @@ interface DistanceProps {
 }
 
 export function Distance({ data }: DistanceProps) {
-    if (data === null) {
+    if (data == null) {
         return (
             <div className="flex flex-col items-center">
             <p className="text-xl">No data found</p>
