@@ -41,10 +41,6 @@ import { Steps } from "./tiles_content/Steps"
 import { HRVDaily } from "./tiles_content/HRVDaily"
 import { HRVContinue } from "./tiles_content/HRVContinue"
 
-// fake/temporary data
-import json_bpm from "./heart.json"
-import json_sleep from "./sleep.json"
-import json_cardio from "./cardio_fitness.json"
 
 interface TileProps {
   title: string
