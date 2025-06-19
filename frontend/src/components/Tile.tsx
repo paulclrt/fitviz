@@ -66,13 +66,10 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
     const [hrvDailyData, setHrvDailyData] = useState<HRVDay | null>(null);
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
 
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-    } = useSortable({id: title});
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+        id: title,
+        animateLayoutChanges: () => true,
+    });
 
     const style = {
         transform: CSS.Transform.toString(transform),

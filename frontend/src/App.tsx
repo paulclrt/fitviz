@@ -16,6 +16,7 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
+  rectSortingStrategy,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
@@ -107,7 +108,7 @@ export default function App() {
         >
         <SortableContext 
         items={tiles}
-        strategy={verticalListSortingStrategy}
+        strategy={rectSortingStrategy}
         >
         {tiles.map((tile, index) => (
             <Tile
