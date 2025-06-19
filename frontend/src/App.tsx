@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from "react";
 import Header from "./components/NavBar";
 import Tile from "./components/Tile";
-import DraggableTile from "./components/DraggableTile";
 import TileSelector from "./TileSelector";
+
+import {
+  DndContext, 
+  closestCenter,
+  TouchSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 const STORAGE_KEY = "user_dashboard_tiles";
 const tileSizes: Record<string, number> = {
@@ -23,9 +38,6 @@ const tileSizes: Record<string, number> = {
 
 const defaultTiles = ["calories", "steps", "sleep", "BPM", "distance", "activeMinutes", "floors", "sedentary", "heartZones", "recentActivity", "hrvDaily", "hrvContinuous", "recovery"];
 
-function groupTilesIntoRows(tiles: string[]): { id: string; x_size: number }[] {
-    return tiles.map(id => ({ id, x_size: tileSizes[id] ?? 3 }));
-}
 
 export default function App() {
     const [tiles, setTiles] = useState<string[]>(() => {
@@ -53,16 +65,7 @@ export default function App() {
         const remaining = defaultTiles.find(t => !tiles.includes(t));
         if (remaining) setTiles(t => [...t, remaining]);
     };
-    const moveTile = (from: number, to: number) => {
-        setTiles(prev => {
-            const updated = [...prev];
-            const [moved] = updated.splice(from, 1);
-            updated.splice(to, 0, moved);
-            return updated;
-        });
-    };
 
-    const arrangedTiles = groupTilesIntoRows(tiles);
 
     //Selector functions (which tiles are added and removed) // bottom right green circle
     const addTileToUserDisplayedTiles = (tile: string) => {
@@ -71,27 +74,54 @@ export default function App() {
     };
     const closeSelector = () => {setShowSelector(false);}
 
+
+
+    // FUNCTIONS DRAG AND DROP - NPM DND
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(TouchSensor),
+    );
+
+    function handleDragEnd(event: DragEndEvent) {
+        const {active, over} = event;
+        if (!over) return
+
+        if (active.id !== over.id) {
+            setTiles((tiles) => {
+                const oldIndex = tiles.indexOf(active.id as string)
+                const newIndex = tiles.indexOf(over.id as string)
+
+                return arrayMove(tiles, oldIndex, newIndex);
+            });
+        }
+    }
+
     return (
         <div>
         <Header selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
         <main className="grid grid-cols-12 auto-rows-[minmax(100px,_auto)] gap-4 px-8 bg-[#0a0f2c] min-h-screen text-white">
-        {arrangedTiles.map((tile, index) => (
-            <DraggableTile
-            key={tile.id}
-            x_size={tile.x_size}
-            y_size={3}
-            id={tile.id}
-            index={index}
-            moveTile={moveTile}
-            >
+        <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        >
+        <SortableContext 
+        items={tiles}
+        strategy={verticalListSortingStrategy}
+        >
+        {tiles.map((tile, index) => (
             <Tile
-            title={tile.id}
-            type={tile.id}
-            onRemove={() => removeTile(tile.id)}
+            key={tile}
+            x_size={tileSizes[tile] ?? 3}
+            y_size={3}
+            title={tile}
+            type={tile}
+            onRemove={() => removeTile(tile)}
             selectedDate={selectedDate}
             />
-            </DraggableTile>
         ))}
+        </SortableContext>
+        </DndContext>
         <button
         onClick={() => setShowSelector(true)}
         className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-green-500 text-white text-2xl shadow"

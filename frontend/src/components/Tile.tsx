@@ -1,4 +1,6 @@
 import React , { useEffect, useState } from "react"
+import {useSortable} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
 
 // api calls
 import { 
@@ -46,13 +48,15 @@ import json_cardio from "./cardio_fitness.json"
 
 interface TileProps {
   title: string
+  x_size: number
+  y_size: number
   type: string
   onRemove: () => void
   selectedDate: string
 }
 
 
-export default function Tile({title, type, selectedDate, onRemove}: TileProps) {
+export default function Tile({title, x_size, y_size, type, selectedDate, onRemove}: TileProps) {
     const [caloriesData, setCaloriesData] = useState<number | null>(null);
     const [sleepData, setSleepData] = useState<SleepData | null>(null);
     const [stepsData, setStepsData] = useState<number | null>(null);
@@ -66,80 +70,94 @@ export default function Tile({title, type, selectedDate, onRemove}: TileProps) {
     const [hrvDailyData, setHrvDailyData] = useState<HRVDay | null>(null);
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
 
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({id: title});
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
 
 
     useEffect(() => {
-  const loadData = async () => {
-    try {
-      if (type === "calories") {
-        setCaloriesData(await fetchCalories(selectedDate));
-      } else if (type === "sleep") {
-        setSleepData(await fetchSleepData(selectedDate));
-      } else if (type === "steps") {
-        setStepsData(await fetchSteps(selectedDate));
-      } else if (type === "distance") {
-        setDistanceData(await fetchDistance(selectedDate));
-      } else if (type === "floors") {
-        setFloorsData(await fetchFloors(selectedDate));
-      } else if (type === "activeMinutes") {
-        setActiveMinutesData(await fetchActiveMinutes(selectedDate));
-      } else if (type === "sedentary") {
-        setSedentaryMinutesData(await fetchSedentaryMinutes(selectedDate));
-      // } else if (type === "heartZones") {
-      //   setHeartZonesData(await fetchHeartZones());
-      } else if (type === "recentActivity") {
-        setRecentActivityData(await fetchRecentActivity(selectedDate));
-      } else if (type === "BPM") {
-        setBpmData(await fetchHeartRateData(selectedDate));
-      }  else if (type === "hrvDaily") {
-          const data = await fetchHRVDay(selectedDate);
-          setHrvDailyData(data);
-      } else if (type === "hrvContinuous") {
-          const data = await fetchHRVcontinuous(selectedDate);
-          setHrvContinuousData(data.data);
-      }
+        const loadData = async () => {
+            try {
+                if (type === "calories") {
+                    setCaloriesData(await fetchCalories(selectedDate));
+                } else if (type === "sleep") {
+                    setSleepData(await fetchSleepData(selectedDate));
+                } else if (type === "steps") {
+                    setStepsData(await fetchSteps(selectedDate));
+                } else if (type === "distance") {
+                    setDistanceData(await fetchDistance(selectedDate));
+                } else if (type === "floors") {
+                    setFloorsData(await fetchFloors(selectedDate));
+                } else if (type === "activeMinutes") {
+                    setActiveMinutesData(await fetchActiveMinutes(selectedDate));
+                } else if (type === "sedentary") {
+                    setSedentaryMinutesData(await fetchSedentaryMinutes(selectedDate));
+                    // } else if (type === "heartZones") {
+                    //   setHeartZonesData(await fetchHeartZones());
+                } else if (type === "recentActivity") {
+                    setRecentActivityData(await fetchRecentActivity(selectedDate));
+                } else if (type === "BPM") {
+                    setBpmData(await fetchHeartRateData(selectedDate));
+                }  else if (type === "hrvDaily") {
+                    const data = await fetchHRVDay(selectedDate);
+                    setHrvDailyData(data);
+                } else if (type === "hrvContinuous") {
+                    const data = await fetchHRVcontinuous(selectedDate);
+                    setHrvContinuousData(data.data);
+                }
 
-    } catch (err) {
-      console.error(`Failed to fetch Fitbit data for type=${type}:`, err);
-    }
-}
-  loadData();
-}, [type, selectedDate]);
-
-
+            } catch (err) {
+                console.error(`Failed to fetch Fitbit data for type=${type}:`, err);
+            }
+        }
+        loadData();
+    }, [type, selectedDate]);
 
 
 
-  return (
-  <div className={`bg-[#1d235e] rounded-xl h-full w-full relative shadow `}>
-      <button
+
+
+    return (
+        <div className={`cursor-grab bg-[#1d235e] p-3 rounded-xl relative shadow col-span-${x_size} row-span-${y_size}`} ref={setNodeRef} style={style} {...attributes} {...listeners}> 
+        <div className={`bg-[#1d235e] rounded-xl h-full w-full relative shadow `} >
+        <button
         className="absolute top-1 right-2 text-white z-10"
         onClick={onRemove}
-      >
+        >
         ✕
-      </button>
-    <div className="p-4 bg-[#11163d] rounded-xl h-full w-full relative">
+        </button>
+        <div className="p-4 bg-[#11163d] rounded-xl h-full w-full relative">
 
-      <div className="text-sm text-right text-white/60 mb-2">
+        <div className="text-sm text-right text-white/60 mb-2">
         <p>{title}</p>
-      </div>
+        </div>
 
-      <div className="flex justify-center items-center h-full">
-  {type === "calories" && <Calories data={caloriesData} />}
-  {type === "steps" && <Steps data={stepsData} goal={10000} />}
-  {type === "distance" && <Distance data={distanceData} />}
-  {type === "floors" && <Floors data={floorsData} />}
-  {type === "activeMinutes" && <ActiveMinutes data={activeMinutesData} />}
-  {type === "sedentary" && <Sedentary data={sedentaryMinutesData} />}
-      {type === "recentActivity" && <RecentActivity data={recentActivityData} />}
-      {type === "sleep" && <Sleep data={sleepData} />}
-      {type === "BPM" && <BPM title={title} data={bpmData} />}
-      {type === "hrvDaily" && <HRVDaily data={hrvDailyData} />}
-      </div>
+        <div className="flex justify-center items-center h-full cursor-pointer" id="tile-content">
+        {type === "calories" && <Calories data={caloriesData} />}
+        {type === "steps" && <Steps data={stepsData} goal={10000} />}
+        {type === "distance" && <Distance data={distanceData} />}
+        {type === "floors" && <Floors data={floorsData} />}
+        {type === "activeMinutes" && <ActiveMinutes data={activeMinutesData} />}
+        {type === "sedentary" && <Sedentary data={sedentaryMinutesData} />}
+        {type === "recentActivity" && <RecentActivity data={recentActivityData} />}
+        {type === "sleep" && <Sleep data={sleepData} />}
+        {type === "BPM" && <BPM title={title} data={bpmData} />}
+        {type === "hrvDaily" && <HRVDaily data={hrvDailyData} />}
+        </div>
 
-    </div>
-  </div>
-);
+        </div>
+        </div>
+        </div>
+    );
 
 
 
@@ -147,6 +165,6 @@ export default function Tile({title, type, selectedDate, onRemove}: TileProps) {
 
 
 /*
-{type === "hrvContinuous" && <HRVContinuous data={hrvContinuousData} />}
-      {type === "heartZones" && <HeartRateZones zones={heartZonesData} />}
-*/
+   {type === "hrvContinuous" && <HRVContinuous data={hrvContinuousData} />}
+   {type === "heartZones" && <HeartRateZones zones={heartZonesData} />}
+   */

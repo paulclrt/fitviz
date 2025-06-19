@@ -29,7 +29,7 @@ export default function DraggableTile({ id, x_size, y_size, index, moveTile, chi
   };
 
   return (
-    <div className={`cursor-move bg-[#1d235e] p-3 rounded-xl relative shadow col-span-${x_size} row-span-${y_size}`}
+    <div className={`cursor-grab bg-[#1d235e] p-3 rounded-xl relative shadow col-span-${x_size} row-span-${y_size}`}
       ref={ref}
       draggable
       onDragStart={handleDragStart}
