@@ -32,11 +32,11 @@ export default function Header({ selectedDate, setSelectedDate }: HeaderProps) {
         </span>
       </div>
       <nav className="space-x-4">
-        <a href="/tutorial" className="hover:underline">Tutorial</a>
-        <a href="/dashboard" className="hover:underline">Dashboard</a>
-        <a href="/blog" className="hover:underline">Blog</a>
+        <a href="/tutorial" className="hover:cursor">Tutorial</a>
+        <a href="/dashboard" className="hover:cursor">Dashboard</a>
+        <a href="/blog" className="hover:cursor">Blog</a>
       </nav>
-      <a onClick={handleLogout} className="hover:underline">Disconnect</a>
+      <a onClick={handleLogout} className="hover:cursor cursor-pointer">Disconnect</a>
     </header>
   )
 }
