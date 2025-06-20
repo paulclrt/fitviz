@@ -129,18 +129,17 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
     }
 
     const baseStyle = {
-        height: "100%",
-        width: "100%",
-        cursor: "pointer",
+        // height: "100%",
+        // width: "100%",
         padding: "1rem",
-        borderRadius: "1rem",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-        backgroundColor: "#1d235e",
-        position: "relative",
+        // borderRadius: "1rem",
+        // boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+        // backgroundColor: "#1d235e",
+        // position: "relative",
     };
     const expandedStyle = isCardOpened
         ? {
-            width: "min(40rem, 95%)",
+            width: "min(90vw, 95%)",
             height: "calc(100% - 10rem)",
             overflowY: "auto",
             overflowX: "hidden",
@@ -150,7 +149,7 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
             bottom: 0,
             left: 0,
             margin: "auto",
-            zIndex: 10,
+            zIndex: 11,
             display: "flex",
             flexDirection: "column",
         }
@@ -167,6 +166,10 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
 
         style={{ ...style, ...baseStyle, ...expandedStyle } as React.CSSProperties }
         layout
+        transition={{
+            default: { ease: "linear" },
+            layout: { duration: 0.3 }
+        }}
         >
 
         <div className={`bg-[#1d235e] rounded-xl h-full w-full relative shadow `} >
