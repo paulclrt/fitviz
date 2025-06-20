@@ -165,7 +165,7 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
         {...listeners}
 
         style={{ ...style, ...baseStyle, ...expandedStyle } as React.CSSProperties }
-        layout
+        // layout
         transition={{
             default: { ease: "linear" },
             layout: { duration: 0.3 }
