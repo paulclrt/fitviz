@@ -1,6 +1,7 @@
 import React , { useEffect, useState } from "react"
 import {useSortable} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
+import { motion } from "motion/react";
 
 // api calls
 import { 
@@ -52,6 +53,7 @@ interface TileProps {
 }
 
 
+
 export default function Tile({title, x_size, y_size, type, selectedDate, onRemove}: TileProps) {
     const [caloriesData, setCaloriesData] = useState<number | null>(null);
     const [sleepData, setSleepData] = useState<SleepData | null>(null);
@@ -65,6 +67,9 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
     const [bpmData, setBpmData] = useState<HeartRateData| null>(null);
     const [hrvDailyData, setHrvDailyData] = useState<HRVDay | null>(null);
     const [hrvContinuousData, setHrvContinuousData] = useState<HRVDay[] | null>(null);
+
+
+    const [isCardOpened, setIsCardOpened] = useState<boolean>(false);
 
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: title,
@@ -116,15 +121,61 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
     }, [type, selectedDate]);
 
 
+    
+    function handleCardExpand() {
+        console.log("test cacrd expand")
+        setIsCardOpened(!isCardOpened);
 
+    }
+
+    const baseStyle = {
+        height: "100%",
+        width: "100%",
+        cursor: "pointer",
+        padding: "1rem",
+        borderRadius: "1rem",
+        boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+        backgroundColor: "#1d235e",
+        position: "relative",
+    };
+    const expandedStyle = isCardOpened
+        ? {
+            width: "min(40rem, 95%)",
+            height: "calc(100% - 10rem)",
+            overflowY: "auto",
+            overflowX: "hidden",
+            position: "fixed",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            margin: "auto",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+        }
+        : {};
 
 
     return (
-        <div className={`cursor-grab bg-[#1d235e] p-3 rounded-xl relative shadow col-span-${x_size} row-span-${y_size}`} ref={setNodeRef} style={style} {...attributes} {...listeners}> 
+        <>
+        <motion.div
+        className={`cursor-grab bg-[#1d235e] p-3 rounded-xl relative shadow col-span-${x_size} row-span-${y_size}`} 
+        ref={setNodeRef} 
+        {...attributes} 
+        {...listeners}
+
+        style={{ ...style, ...baseStyle, ...expandedStyle } as React.CSSProperties }
+        layout
+        >
+
         <div className={`bg-[#1d235e] rounded-xl h-full w-full relative shadow `} >
         <button
         className="absolute top-1 right-2 text-white z-10"
-        onClick={onRemove}
+        onClick={(e) => {
+            // e.stopPropagation();
+            onRemove();
+        }}
         >
         ✕
         </button>
@@ -134,7 +185,15 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
         <p>{title}</p>
         </div>
 
-        <div className="flex justify-center items-center h-full cursor-pointer" id="tile-content">
+        <div 
+        className="flex justify-center items-center h-full cursor-pointer" 
+        id="tile-content" /*so dnd-kit doesn't triggers*/
+        onClick={(e) => {
+            handleCardExpand();
+            e.preventDefault();
+            e.stopPropagation();
+        }}
+        >
         {type === "calories" && <Calories data={caloriesData} />}
         {type === "steps" && <Steps data={stepsData} goal={10000} />}
         {type === "distance" && <Distance data={distanceData} />}
@@ -149,7 +208,8 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
 
         </div>
         </div>
-        </div>
+        </motion.div>
+        </>
     );
 
 
@@ -160,4 +220,9 @@ export default function Tile({title, x_size, y_size, type, selectedDate, onRemov
 /*
    {type === "hrvContinuous" && <HRVContinuous data={hrvContinuousData} />}
    {type === "heartZones" && <HeartRateZones zones={heartZonesData} />}
+
+
+
+        <div className={`cursor-grab bg-[#1d235e] p-3 rounded-xl relative shadow col-span-${x_size} row-span-${y_size}`} ref={setNodeRef} style={style} {...attributes} {...listeners}> 
+        </div>
    */

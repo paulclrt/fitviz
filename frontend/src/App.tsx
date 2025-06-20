@@ -7,11 +7,11 @@ import {
   DndContext, 
   closestCenter,
   TouchSensor,
-  PointerSensor,
   useSensor,
   useSensors,
   DragEndEvent
 } from '@dnd-kit/core';
+import { CustomPointerSensor } from "./utils/dnd-custom-sensors"
 import {
   arrayMove,
   SortableContext,
@@ -77,21 +77,10 @@ export default function App() {
     const closeSelector = () => {setShowSelector(false);}
 
 
-
     // FUNCTIONS DRAG AND DROP - NPM DND
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                delay: 5,
-                tolerance: 3,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 5,
-                tolerance: 3,
-            }
-        })
+        useSensor(CustomPointerSensor),
+        useSensor(TouchSensor)
     );
 
     function handleDragEnd(event: DragEndEvent) {
