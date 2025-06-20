@@ -19,6 +19,7 @@ import {
   rectSortingStrategy,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 
 const STORAGE_KEY = "user_dashboard_tiles";
 const tileSizes: Record<string, number> = {
@@ -79,8 +80,18 @@ export default function App() {
 
     // FUNCTIONS DRAG AND DROP - NPM DND
     const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(TouchSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                delay: 5,
+                tolerance: 3,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 5,
+                tolerance: 3,
+            }
+        })
     );
 
     function handleDragEnd(event: DragEndEvent) {
@@ -105,6 +116,7 @@ export default function App() {
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
+        modifiers={[restrictToWindowEdges]}
         >
         <SortableContext 
         items={tiles}
