@@ -4,9 +4,11 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "daily"
+    target-branch: "dependabot"
 
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
       interval: "daily"
+    target-branch: "dependabot"
 
