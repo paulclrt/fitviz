@@ -35,7 +35,6 @@ jobs:
           tags: |
             paulclrt/fitviz_frontend:${{ github.ref_name }}   
             paulclrt/fitviz_frontend:latest                  
-          annotations: "Fitviz frontend app (nginx + compiler react frontend)"
           push: true
           cache-from: type=registry,ref=paulclrt/fitviz_backend:cache
           cache-to: type=registry,ref=paulclrt/fitviz_backend:cache,mode=max
@@ -65,7 +64,6 @@ jobs:
           tags: |
             paulclrt/fitviz_frontend:${{ github.ref_name }}   
             paulclrt/fitviz_frontend:latest                  
-          annotations: "Fitviz backend (typescript, express app)"
           push: true
           cache-from: type=registry,ref=paulclrt/fitviz_frontend:cache
           cache-to: type=registry,ref=paulclrt/fitviz_frontend:cache,mode=max
