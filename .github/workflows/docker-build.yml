@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - workflows
     tags:
       - "v*" # only trigger whena tag is added
 
