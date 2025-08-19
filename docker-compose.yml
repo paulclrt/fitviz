@@ -1,16 +1,18 @@
 version: "3.8"
 services:
   frontend:
-    build: ./frontend
+    image: paulclrt/fitviz_frontend:2.0.0
     ports:
       - "80:80"
     depends_on:
       - backend
 
   backend:
-    build: ./backend
+    image: paulclrt/fitviz_backend:2.1.0
     ports:
       - "8080:8080"
     expose:
       - "8080"
+    environment:
+      - NODE_ENV=production
 
