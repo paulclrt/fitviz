@@ -33,8 +33,8 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           tags: |
-            paulclrt/fitviz_frontend:${{ github.ref_name }}   
-            paulclrt/fitviz_frontend:latest                  
+            paulclrt/fitviz_backend:${{ github.ref_name }}   
+            paulclrt/fitviz_backend:latest                  
           push: true
           cache-from: type=registry,ref=paulclrt/fitviz_backend:cache
           cache-to: type=registry,ref=paulclrt/fitviz_backend:cache,mode=max
