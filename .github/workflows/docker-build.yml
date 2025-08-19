@@ -37,8 +37,8 @@ jobs:
             paulclrt/fitviz_frontend:latest                  
           # annotations: ${{ steps.meta.outputs.annotations }}
           push: true
-        cache-from: type=registry,ref=paulclrt/fitviz_backend:cache
-        cache-to: type=registry,ref=paulclrt/fitviz_backend:cache,mode=max
+          cache-from: type=registry,ref=paulclrt/fitviz_backend:cache
+          cache-to: type=registry,ref=paulclrt/fitviz_backend:cache,mode=max
 
 
   docker_build_frontend:
@@ -67,5 +67,5 @@ jobs:
             paulclrt/fitviz_frontend:latest                  
           # annotations: ${{ steps.meta.outputs.annotations }}
           push: true
-        cache-from: type=registry,ref=paulclrt/fitviz_frontend:cache
-        cache-to: type=registry,ref=paulclrt/fitviz_frontend:cache,mode=max
+          cache-from: type=registry,ref=paulclrt/fitviz_frontend:cache
+          cache-to: type=registry,ref=paulclrt/fitviz_frontend:cache,mode=max
